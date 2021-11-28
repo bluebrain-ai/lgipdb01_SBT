@@ -1,19 +1,19 @@
 package com.bluescript.demo.dto;
  
 public interface IGetPolicy2JpaDto  { 
-public <DATATYPE> getdb2Issuedate();
-public <DATATYPE> getdb2Expirydate();
-public <DATATYPE> getdb2Lastchanged();
-public <DATATYPE> getdb2BrokeridIntindicator();
-public <DATATYPE> getdb2Brokersrefindicator();
-public <DATATYPE> getdb2PaymentIntindicator();
-public <DATATYPE> getdb2MMake();
-public <DATATYPE> getdb2MModel();
+public string getdb2Issuedate();
+public string getdb2Expirydate();
+public string getdb2Lastchanged();
+public int getdb2BrokeridIntindicator();
+public int getdb2Brokersrefindicator();
+public int getdb2PaymentIntindicator();
+public string getdb2MMake();
+public string getdb2MModel();
 public int  getDb2MValueInt();
-public <DATATYPE> getdb2MRegnumber();
-public <DATATYPE> getdb2MColour();
+public string getdb2MRegnumber();
+public string getdb2MColour();
 public int getDb2MCcSint();
-public <DATATYPE> getdb2MManufactured();
+public string getdb2MManufactured();
 public int  getDb2MPremiumInt();
 public int  getDb2MAccidentsInt();
 } 

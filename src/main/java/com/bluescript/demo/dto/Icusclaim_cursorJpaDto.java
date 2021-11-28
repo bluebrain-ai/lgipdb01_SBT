@@ -1,12 +1,12 @@
 package com.bluescript.demo.dto;
  
 public interface Icusclaim_cursorJpaDto  { 
-public <DATATYPE> getDb2CustomernumInt();
-public <DATATYPE> getDb2ClaimnumInt();
-public <DATATYPE> getDb2PolicynumInt();
-public <DATATYPE> getDb2CDate();
-public <DATATYPE> getDb2CPaidInt();
-public <DATATYPE> getDb2CValueInt();
-public <DATATYPE> getDb2CCause();
-public <DATATYPE> getDb2CObservations();
+public int getDb2CustomernumInt();
+public int getDb2ClaimnumInt();
+public int getDb2PolicynumInt();
+public string getDb2CDate();
+public int getDb2CPaidInt();
+public int getDb2CValueInt();
+public string getDb2CCause();
+public string getDb2CObservations();
 } 
