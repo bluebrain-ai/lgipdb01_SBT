@@ -1,27 +1,27 @@
 package com.bluescript.demo.dto;
 
 public interface IgetHousePolicyJpaDto {
-    public String getdb2Issuedate();
+    public String getDb2Issuedate();
 
-    public String getdb2Expirydate();
+    public String getDb2Expirydate();
 
-    public String getdb2Lastchanged();
+    public String getDb2Lastchanged();
 
-    public int getdb2BrokeridIntindicator();
+    public Integer getDb2BrokeridInt();
 
-    public int getdb2Brokersrefindicator();
+    public String getDb2Brokersref();
 
-    public int getdb2PaymentIntindicator();
+    public Integer getDb2PaymentInt();
 
-    public String getdb2HPropertytype();
+    public String getDb2HPropertytype();
 
-    public int getDb2HBedroomsSint();
+    public Integer getDb2HBedroomsSint();
 
-    public int getDb2HValueInt();
+    public Integer getDb2HValueInt();
 
-    public String getdb2HHousename();
+    public String getDb2HHousename();
 
-    public String getdb2HHousenumber();
+    public String getDb2HHousenumber();
 
-    public String getdb2HPostcode();
+    public String getDb2HPostcode();
 }
