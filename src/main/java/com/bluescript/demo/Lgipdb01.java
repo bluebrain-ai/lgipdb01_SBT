@@ -2,6 +2,9 @@ package com.bluescript.demo;
 
 import java.util.List;
 import java.util.stream.Stream;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -26,26 +29,30 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.models.Response;
+
 import com.bluescript.demo.dto.IGetPolicyJpaDto;
 import com.bluescript.demo.jpa.IGetPolicyJpa;
-import com.bluescript.demo.jpa.IgetCommercialDb2Info3CurCustCursorJpa;
-import com.bluescript.demo.dto.IGetPolicy1JpaDto;
-import com.bluescript.demo.jpa.IGetPolicy1Jpa;
+import com.bluescript.demo.jpa.IgetHousePolicyJpa;
+import com.bluescript.demo.mapper.ConvObjtoObj;
+
 import com.bluescript.demo.dto.IGetPolicy2JpaDto;
-import com.bluescript.demo.jpa.IGetPolicy2Jpa;
+
 import com.bluescript.demo.dto.IGetPolicy3JpaDto;
-import com.bluescript.demo.jpa.IGetPolicy3Jpa;
+
 import com.bluescript.demo.dto.IGetPolicy4JpaDto;
-import com.bluescript.demo.jpa.IGetPolicy4Jpa;
+
 import com.bluescript.demo.dto.Icust_cursorJpaDto;
+import com.bluescript.demo.dto.IgetHousePolicyJpaDto;
 import com.bluescript.demo.dto.Izip_cursorJpaDto;
 import com.bluescript.demo.dto.IGetPolicy5JpaDto;
-import com.bluescript.demo.jpa.IGetPolicy5Jpa;
+
 import com.bluescript.demo.dto.Icusclaim_cursorJpaDto;
 import com.bluescript.demo.model.WsHeader;
 import com.bluescript.demo.model.ErrorMsg;
 import com.bluescript.demo.model.EmVariable;
 import com.bluescript.demo.model.Db2OutIntegers;
+import com.bluescript.demo.model.Db2PolicyCommon;
 import com.bluescript.demo.model.Dfhcommarea;
 import com.bluescript.demo.model.CaCustomerRequest;
 import com.bluescript.demo.model.CaCustsecrRequest;
@@ -118,7 +125,7 @@ public class Lgipdb01 {
     private double icomPointer;
     private double icomPointerStart;
     private String wsRequestId;
-    private int wsResp;
+    private int wsResp = 0;
     private int db2CustomernumInt = 0;
     private int db2PolicynumInt = 0;
     private int db2ClaimnumInt = 0;
@@ -127,15 +134,18 @@ public class Lgipdb01 {
     private int indEPaddingdata;
     private int indEPaddingdatal;
     private String icomRecord;
-    private IGetPolicyJpa GetPolicyJpa;
+    @Autowired
+    private IGetPolicyJpa getPolicyJpa;
+
     private IGetPolicyJpaDto getPolicyJpaDto;
     private int wsFullEndowLen;
     @Autowired
     private Db2EndowFixed db2EndowFixed;
+    @Autowired
     private Db2PolicyCommon db2PolicyCommon;
     private Db2Endowment db2Endowment;
     private IGetPolicyJpa getPolicy1Jpa;
-    private IGetPolicyJpaDto getPolicy1JpaDto;
+    private IgetHousePolicyJpa getHousePolicyJpa;
     private int wsFullHouseLen;
     private int eibcalen;
     private Db2House db2House;
@@ -145,14 +155,18 @@ public class Lgipdb01 {
     private IGetPolicyJpa getPolicy2Jpa;
     private IGetPolicyJpa getPolicy3Jpa;
     private IGetPolicyJpaDto getPolicy3JpaDto;
-    private IGetPolicy4Jpa getPolicy4Jpa;
-    private IgetCommercialDb2Info3CurCustCursorJpa getCommercialDb2Info3CurCustCursorJpa;
-    private Object getCommercialDb2Info5CurZipCursorJpa;
+
+    @Autowired
+    private com.bluescript.demo.mapper.ConvObjtoObj convObjToObj;
+
+    private IgetHousePolicyJpaDto getHousePolicyJpaDto;
 
     @PostMapping("/lgipdb01")
     public ResponseEntity<Dfhcommarea> mainline(@RequestBody Dfhcommarea payload) {
+
         log.debug("Methodmainlinestarted..");
-        if (wsResp == 0) {
+        BeanUtils.copyProperties(payload, dfhcommarea);
+        if (wsResp > 0) {
             wsRequestId = dfhcommarea.getCaRequestId();
             db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
         } else {
@@ -165,43 +179,44 @@ public class Lgipdb01 {
             // }
             dfhcommarea.setCaReturnCode(00);
             db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
-            db2PolicynumInt = (int) caPolicyRequest.getCaPolicyNum();
+            db2PolicynumInt = (int) dfhcommarea.getCaPolicyRequest().getCaPolicyNum();
             emVariable.setEmCusnum(String.valueOf(dfhcommarea.getCaCustomerNum()));
             emVariable.setEmPolnum(String.valueOf(caPolicyRequest.getCaPolicyNum()));
             wsRequestId = dfhcommarea.getCaRequestId().toUpperCase();
         }
         switch (wsRequestId) {
-            case "01IEND":
-                getEndowDb2Info();
-                break;
-            case "01IHOU":
-               // getHouseDb2Info();
-                break;
-            case "01IMOT":
-               // getMotorDb2Info();
+        case "01IEND":
+            log.warn("wsRequestId:" + wsRequestId);
+            getEndowDb2Info();
+            break;
+        case "01IHOU":
+            getHouseDb2Info();
+            break;
+        case "01IMOT":
+            // getMotorDb2Info();
 
-                break;
-            case "01ICOM":
-                getCommercialDb2Info1();
-                break;
-            case "02ICOM":
-               // getCommercialDb2Info2();
-                break;
-            case "03ICOM":
-               // getCommercialDb2Info3();
-                break;
-            case "05ICOM":
-                getCommercialDb2Info5();
-                break;
-            case "01ICLM":
-                db2ClaimnumInt = (int) dfhcommarea.getCaPolicyRequest().getCaClaim().getCaCNum();
-               // getClaimDb2Info1();
-                break;
-            case "02ICLM":
-              //  getClaimDb2Info2();
-                break;
-            default:
-                dfhcommarea.setCaReturnCode(99);
+            break;
+        case "01ICOM":
+            // getCommercialDb2Info1();
+            break;
+        case "02ICOM":
+            // getCommercialDb2Info2();
+            break;
+        case "03ICOM":
+            // getCommercialDb2Info3();
+            break;
+        case "05ICOM":
+            // getCommercialDb2Info5();
+            break;
+        case "01ICLM":
+            db2ClaimnumInt = (int) dfhcommarea.getCaPolicyRequest().getCaClaim().getCaCNum();
+            // getClaimDb2Info1();
+            break;
+        case "02ICLM":
+            // getClaimDb2Info2();
+            break;
+        default:
+            dfhcommarea.setCaReturnCode(99);
         }
         log.debug("Method mainline completed..");
 
@@ -210,387 +225,370 @@ public class Lgipdb01 {
 
     @Transactional(readOnly = true)
     public void getEndowDb2Info() {
-        log.debug("MethodgetEndowDb2Infostarted..");
+        log.warn("MethodgetEndowDb2Infostarted..");
+
         emVariable.setEmSqlreq(" SELECT ENDOW ");
 
         try {
-            getPolicyJpaDto = GetPolicyJpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
+            log.warn("db2CustomernumInt:" + db2CustomernumInt + " db2PolicynumInt:" + db2PolicynumInt);
+            getPolicyJpaDto = getPolicyJpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
                     db2PolicynumInt);
+            log.warn(getPolicyJpaDto.toString());
+            if (getPolicyJpaDto != null) {
 
-            // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-            // wsRequiredCaLen = wsFullEndowLen + wsRequiredCaLen;
+                // all individual moves are taken care directly with mapper .. so explict moves
+                // are removed
+                caPolicyCommon = convObjToObj.db2CommonToCaPolicyCommon(getPolicyJpaDto);
+                caEndowment = convObjToObj.db2EndowToCaEndowment(getPolicyJpaDto);
+                dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+                dfhcommarea.getCaPolicyRequest().setCaEndowment(caEndowment);
 
-            // if (db2OutIntegers.getDb2EPaddingLen() != 0) {
-            //     wsRequiredCaLen = db2OutIntegers.getDb2EPaddingLen() + wsRequiredCaLen;
-            //     endPolicyPos = db2OutIntegers.getDb2EPaddingLen() + endPolicyPos;
-            // }
+                log.warn("caEndowment:" + caEndowment.toString());
+                log.warn("caPolicyCommon:" + caPolicyCommon.toString());
 
-            getPolicyJpaDto.getdb2BrokeridIntindicator();
-            if (indBrokerid != minusOne) {
-                // MOVE DB2-BROKERID-INT TO DB2-BROKERID
-                db2PolicyCommon.setDb2Brokerid(db2OutIntegers.getDb2BrokeridInt());
-
-            }
-            if (indPayment != minusOne) {
-                // MOVE DB2-PAYMENT-INT TO DB2-PAYMENT
-                db2PolicyCommon.setDb2Payment(db2OutIntegers.getDb2PaymentInt());
-            }
-
-            // MOVE DB2-E-TERM-SINT TO DB2-E-TERM
-            // MOVE DB2-E-SUMASSURED-INT TO DB2-E-SUMASSURED
-            // MOVE DB2-POLICY-COMMON TO CA-POLICY-COMMON
-            // MOVE DB2-ENDOW-FIXED
-            // TO CA-ENDOWMENT(1:WS-ENDOW-LEN)
-
-            db2EndowFixed.setDb2ETerm(db2OutIntegers.getDb2ETermSint());
-            db2EndowFixed.setDb2ESumassured(db2OutIntegers.getDb2ESumassuredInt());
-
-            // convobj to obj
-            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-            dfhcommarea.getCaPolicyRequest().setCaEndowment(db2EndowFixed);
-
-            if (db2Endowment.getDb2EPaddingdata() != null) {
-
-                // Crete db2Endowment from lgpolicy copybook
-                // MOVE DB2-E-PADDINGDATA TO
-                // CA-E-PADDING-DATA(1:DB2-E-PADDING-LEN)
-                // conv string to object
-                dfhcommarea.getCaPolicyRequest().getCaEndowment()
-                        .setCaEPaddingData(db2Endowment.getDb2EPaddingdata());
-
+                if (getPolicyJpaDto.getDb2EPaddingLen() != null) {
+                    endPolicyPos = getPolicyJpaDto.getDb2EPaddingLen();
+                }
+                String caPaddingData = dfhcommarea.getCaPolicyRequest().getCaEndowment().getCaEPaddingData();
+                dfhcommarea.getCaPolicyRequest().getCaEndowment().setCaEPaddingData(caPaddingData + "FINAL");
             }
 
-            dfhcommarea.getCaPolicyRequest().getCaEndowment().setCaEPaddingData("FINAL");
         } catch (Exception e) { // no row found 01
+            log.error(e);
             dfhcommarea.setCaReturnCode(90);
-            //writeErrorMessage();
+            // writeErrorMessage();
         }
 
         log.debug("Method getEndowDb2Info completed..");
+
     }
 
-    // /*
-    // @Transactional(readOnly = true)
-    // public void getHouseDb2Info() {
-    //     log.debug("MethodgetHouseDb2Infostarted..");
-    //     emVariable.setEmSqlreq(" SELECT HOUSE ");
+    @Transactional(readOnly = true)
+    public void getHouseDb2Info() {
+        log.debug("MethodgetHouseDb2Infostarted..");
+        emVariable.setEmSqlreq(" SELECT HOUSE ");
 
-    //     try {
-    //         getPolicy1JpaDto = getPolicy1Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
-    //                 db2PolicynumInt);
+        try {
+            getHousePolicyJpaDto = getHousePolicyJpa
+                    .getHousePolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
 
-    //         wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    //         wsRequiredCaLen = wsFullHouseLen + wsRequiredCaLen;
-    //         if (eibcalen < wsRequiredCaLen) {
-    //             dfhcommarea.setCaReturnCode(98); /* return */
+            if (indBrokerid != minusOne) {
+                db2PolicyCommon.setDb2Brokerid(db2OutIntegers.getDb2BrokeridInt());
+            }
+            if (indPayment != minusOne) {
+                db2PolicyCommon.setDb2Payment(db2OutIntegers.getDb2PaymentInt());
+            }
+            // MOVE DB2-H-BEDROOMS-SINT TO DB2-H-BEDROOMS
+            // MOVE DB2-H-VALUE-INT TO DB2-H-VALUE
 
-    //         } else {
-    //             if (indBrokerid != minusOne) {
-    //                 db2PolicyCommon.setDb2Brokerid(db2OutIntegers.getDb2BrokeridInt());
-    //             }
-    //             if (indPayment != minusOne) {
-    //                 db2PolicyCommon.setDb2Payment(db2OutIntegers.getDb2PaymentInt());
-    //             }
-    //             // MOVE DB2-H-BEDROOMS-SINT TO DB2-H-BEDROOMS
-    //             // MOVE DB2-H-VALUE-INT TO DB2-H-VALUE
+            // MOVE DB2-POLICY-COMMON TO CA-POLICY-COMMON
+            // MOVE DB2-HOUSE TO CA-HOUSE(1:WS-HOUSE-LEN)
 
-    //             // MOVE DB2-POLICY-COMMON TO CA-POLICY-COMMON
-    //             // MOVE DB2-HOUSE TO CA-HOUSE(1:WS-HOUSE-LEN)
+            // db2House.setDb2HBedrooms(db2OutIntegers.getDb2HBedroomsSint());
+            // db2House.setDb2HValue(db2OutIntegers.getDb2HValueInt());
 
-    //             db2House.setDb2HBedrooms(db2OutIntegers.getDb2HBedroomsSint());
-    //             db2House.setDb2HValue(db2OutIntegers.getDb2HValueInt());
+            // Convobject same as line 221
+            // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+            // dfhcommarea.getCaPolicyRequest().setCaHouse(db2House);
+            caPolicyCommon = convObjToObj.db2HCommonToCaPolicyCommon(getHousePolicyJpaDto);
+            caHouse = convObjToObj.db2HouseToCaHouse(getHousePolicyJpaDto);
+            log.warn("caHouse:" + caHouse.toString());
+            log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+            dfhcommarea.getCaPolicyRequest().setCaHouse(caHouse);
 
-    //             // Convobject same as line 221
-    //             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //             dfhcommarea.getCaPolicyRequest().setCaHouse(db2House);
-
-    //         }
-    //         caHouse.setCaHFiller("FINAL");
-    //     } catch (Exception e) {
-    //         log.error(e);
-    //         dfhcommarea.setCaReturnCode(01); // No row found
-    //         dfhcommarea.setCaReturnCode(90);
-    //         writeErrorMessage();
-    //     }
-    //     log.debug("Method getHouseDb2Info completed..");
-    // }
+            caHouse.setCaHFiller("FINAL");
+        } catch (Exception e) {
+            log.error(e);
+            dfhcommarea.setCaReturnCode(01); // No row found
+            dfhcommarea.setCaReturnCode(90);
+            // writeErrorMessage();
+        }
+        log.debug("Method getHouseDb2Info completed..");
+    }
 
     // @Transactional(readOnly = true)
     // public void getMotorDb2Info() {
-    //     log.debug("MethodgetMotorDb2Infostarted..");
-    //     emVariable.setEmSqlreq(" SELECT MOTOR ");
+    // log.debug("MethodgetMotorDb2Infostarted..");
+    // emVariable.setEmSqlreq(" SELECT MOTOR ");
 
-    //     try {
-    //         IGetPolicy2JpaDto = getPolicy2Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
-    //                 db2PolicynumInt);
+    // try {
+    // IGetPolicy2JpaDto =
+    // getPolicy2Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
+    // db2PolicynumInt);
 
-    //         wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    //         wsRequiredCaLen = wsFullMotorLen + wsRequiredCaLen;
-    //         if (eibcalen < wsRequiredCaLen) {
-    //             dfhcommarea.setCaReturnCode(98); /* return */
+    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
+    // wsRequiredCaLen = wsFullMotorLen + wsRequiredCaLen;
+    // if (eibcalen < wsRequiredCaLen) {
+    // dfhcommarea.setCaReturnCode(98); /* return */
 
-    //         } else {
-    //             if (indBrokerid != minusOne) {
-    //                 db2PolicyCommon.setDb2Brokerid(db2OutIntegers.getDb2BrokeridInt());
-    //             }
-    //             if (indPayment != minusOne) {
-    //                 db2PolicyCommon.setDb2Payment(db2OutIntegers.getDb2PaymentInt());
-    //             }
-    //             // MOVE DB2-M-CC-SINT TO DB2-M-CC
-    //             // MOVE DB2-M-VALUE-INT TO DB2-M-VALUE
-    //             // MOVE DB2-M-PREMIUM-INT TO DB2-M-PREMIUM
-    //             // MOVE DB2-M-ACCIDENTS-INT TO DB2-M-ACCIDENTS
+    // } else {
+    // if (indBrokerid != minusOne) {
+    // db2PolicyCommon.setDb2Brokerid(db2OutIntegers.getDb2BrokeridInt());
+    // }
+    // if (indPayment != minusOne) {
+    // db2PolicyCommon.setDb2Payment(db2OutIntegers.getDb2PaymentInt());
+    // }
+    // // MOVE DB2-M-CC-SINT TO DB2-M-CC
+    // // MOVE DB2-M-VALUE-INT TO DB2-M-VALUE
+    // // MOVE DB2-M-PREMIUM-INT TO DB2-M-PREMIUM
+    // // MOVE DB2-M-ACCIDENTS-INT TO DB2-M-ACCIDENTS
 
-    //             db2Motor.setDb2MCc(db2OutIntegers.getDb2MCcSint());
-    //             db2Motor.setDb2MValue(db2OutIntegers.getDb2MValueInt());
-    //             db2Motor.setDb2MPremium(db2OutIntegers.getDb2MPremiumInt());
-    //             db2Motor.setDb2MAccidents(db2OutIntegers.getDb2MAccidentsInt());
+    // db2Motor.setDb2MCc(db2OutIntegers.getDb2MCcSint());
+    // db2Motor.setDb2MValue(db2OutIntegers.getDb2MValueInt());
+    // db2Motor.setDb2MPremium(db2OutIntegers.getDb2MPremiumInt());
+    // db2Motor.setDb2MAccidents(db2OutIntegers.getDb2MAccidentsInt());
 
-    //             dfhcommarea.getCaPolicyRequest().getCaMotor().setCaMPremium(db2OutIntegers.getDb2MPremiumInt());
-    //             dfhcommarea.getCaPolicyRequest().getCaMotor().setCaMAccidents(db2OutIntegers.getDb2MAccidentsInt());
-    //             // Convobject same as line 221
-    //             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //             dfhcommarea.getCaPolicyRequest().setCaMototor(db2Motor);
-    //         }
-    //         caMotor.setCaMFiller("FINAL");
-    //     } catch (Exception e) {
-    //         dfhcommarea.setCaReturnCode(01);
-    //         dfhcommarea.setCaReturnCode(90);
-    //         writeErrorMessage();
+    // dfhcommarea.getCaPolicyRequest().getCaMotor().setCaMPremium(db2OutIntegers.getDb2MPremiumInt());
+    // dfhcommarea.getCaPolicyRequest().getCaMotor().setCaMAccidents(db2OutIntegers.getDb2MAccidentsInt());
+    // // Convobject same as line 221
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+    // dfhcommarea.getCaPolicyRequest().setCaMototor(db2Motor);
+    // }
+    // caMotor.setCaMFiller("FINAL");
+    // } catch (Exception e) {
+    // dfhcommarea.setCaReturnCode(01);
+    // dfhcommarea.setCaReturnCode(90);
+    // writeErrorMessage();
 
-    //     }
+    // }
 
-    //     log.debug("Method getMotorDb2Info completed..");
+    // log.debug("Method getMotorDb2Info completed..");
     // }
 
     // @Transactional(readOnly = true)
     // public void getCommercialDb2Info1() {
-    //     log.debug("MethodgetCommercialDb2Info1started..");
-    //     emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+    // log.debug("MethodgetCommercialDb2Info1started..");
+    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
 
-    //     try {
-    //         getPolicy3JpaDto = getPolicy3Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
-    //                 db2PolicynumInt);
+    // try {
+    // getPolicy3JpaDto =
+    // getPolicy3Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
+    // db2PolicynumInt);
 
-    //         wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    //         wsRequiredCaLen = wsFullCommLen + wsRequiredCaLen;
-    //         if (eibcalen < wsRequiredCaLen) {
-    //             dfhcommarea.setCaReturnCode(98); /* return */
+    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
+    // wsRequiredCaLen = wsFullCommLen + wsRequiredCaLen;
+    // if (eibcalen < wsRequiredCaLen) {
+    // dfhcommarea.setCaReturnCode(98); /* return */
 
-    //         } else {
+    // } else {
 
-    //             db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    //             db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    //             db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    //             db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    //             db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    //             db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    //             db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    //             db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    //             db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    //             // Convobject same as line 221
-    //             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //             dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
-    //         }
-    //         caCommercial.setCaBFiller("FINAL");
-    //     } catch (Exception e) {
-    //         dfhcommarea.setCaReturnCode(01);
-    //         dfhcommarea.setCaReturnCode(90);
-    //         writeErrorMessage();
-    //     }
+    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
+    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
+    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
+    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
+    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
+    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
+    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
+    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
+    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
+    // // Convobject same as line 221
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+    // }
+    // caCommercial.setCaBFiller("FINAL");
+    // } catch (Exception e) {
+    // dfhcommarea.setCaReturnCode(01);
+    // dfhcommarea.setCaReturnCode(90);
+    // writeErrorMessage();
+    // }
 
-    //     log.debug("Method getCommercialDb2Info1 completed..");
+    // log.debug("Method getCommercialDb2Info1 completed..");
     // }
 
     // @Transactional(readOnly = true)
     // public void getCommercialDb2Info2() {
-    //     log.debug("MethodgetCommercialDb2Info2started..");
-    //     emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
-    //     try {
-    //         IGetPolicy4JpaDto getPolicy4JpaDto = getPolicy4Jpa.getPolicyByDb2PolicynumInt(db2PolicynumInt);
+    // log.debug("MethodgetCommercialDb2Info2started..");
+    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+    // try {
+    // IGetPolicy4JpaDto getPolicy4JpaDto =
+    // getPolicy4Jpa.getPolicyByDb2PolicynumInt(db2PolicynumInt);
 
-    //         wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    //         wsRequiredCaLen = wsFullCommLen + wsRequiredCaLen;
-    //         if (eibcalen < wsRequiredCaLen) {
-    //             dfhcommarea.setCaReturnCode(98); /* return */
+    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
+    // wsRequiredCaLen = wsFullCommLen + wsRequiredCaLen;
+    // if (eibcalen < wsRequiredCaLen) {
+    // dfhcommarea.setCaReturnCode(98); /* return */
 
-    //         } else {
-    //             dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    //             db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    //             db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    //             db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    //             db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    //             db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    //             db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    //             db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    //             db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    //             db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    //             // Convobject same as line 221
-    //             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //             dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+    // } else {
+    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
+    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
+    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
+    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
+    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
+    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
+    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
+    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
+    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
+    // // Convobject same as line 221
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
 
-    //         }
-    //         caCommercial.setCaBFiller("FINAL");
-    //     } catch (Exception e) {
-    //         dfhcommarea.setCaReturnCode(01);
-    //         dfhcommarea.setCaReturnCode(90);
-    //         writeErrorMessage();
-    //     }
-    //     log.debug("Method getCommercialDb2Info2 completed..");
+    // }
+    // caCommercial.setCaBFiller("FINAL");
+    // } catch (Exception e) {
+    // dfhcommarea.setCaReturnCode(01);
+    // dfhcommarea.setCaReturnCode(90);
+    // writeErrorMessage();
+    // }
+    // log.debug("Method getCommercialDb2Info2 completed..");
     // }
 
     // public void getCommercialDb2Info3() {
-    //     log.debug("MethodgetCommercialDb2Info3started..");
-    //     emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
-    //     icomRecordCount = 0;
-    //     do {
-    //         getCommercialDb2Info3Cur();
-    //         sqlcode++;
-    //     } while (sqlcode > 0);
-    //     icomDataLength = icomRecordCount * 1202;
-    //     // Put container icomData copied from icomrecord
-    //     // put container icomcount copied from icount record
-    //     icomCount = icomRecordCount;
-    //     log.debug("Method getCommercialDb2Info3 completed..");
+    // log.debug("MethodgetCommercialDb2Info3started..");
+    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+    // icomRecordCount = 0;
+    // do {
+    // getCommercialDb2Info3Cur();
+    // sqlcode++;
+    // } while (sqlcode > 0);
+    // icomDataLength = icomRecordCount * 1202;
+    // // Put container icomData copied from icomrecord
+    // // put container icomcount copied from icount record
+    // icomCount = icomRecordCount;
+    // log.debug("Method getCommercialDb2Info3 completed..");
     // }
 
     // @Transactional(readOnly = true)
     // public void getCommercialDb2Info3Cur() {
-    //     log.debug("MethodgetCommercialDb2Info3Curstarted..");
-    //     // addressOfDfhcommarea;
-    //     Stream<IgetCommercialDb2Info3CurCustCursorJpa> CustCursorData = getCommercialDb2Info3CurCustCursorJpa
-    //             .getCustCursorByDb2CustomernumInt(db2CustomernumInt);
-    //     CustCursorData.forEach(e -> {
-    //         db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    //         db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    //         db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    //         db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    //         db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    //         db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    //         db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    //         db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    //         db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    //         dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    //         caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    //         // Convobject same as line 221
-    //         dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //         dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+    // log.debug("MethodgetCommercialDb2Info3Curstarted..");
+    // // addressOfDfhcommarea;
+    // Stream<IgetCommercialDb2Info3CurCustCursorJpa> CustCursorData =
+    // getCommercialDb2Info3CurCustCursorJpa
+    // .getCustCursorByDb2CustomernumInt(db2CustomernumInt);
+    // CustCursorData.forEach(e -> {
+    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
+    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
+    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
+    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
+    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
+    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
+    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
+    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
+    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
+    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
+    // // Convobject same as line 221
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
 
-    //         icomRecordCount = 1 + icomRecordCount;
-    //         // Set icom-pointer to address of CA-B-FILLER
-    //         if (icomRecordCount > 20) {
-    //             sqlcode = 17;
-    //         }
-    //     });
+    // icomRecordCount = 1 + icomRecordCount;
+    // // Set icom-pointer to address of CA-B-FILLER
+    // if (icomRecordCount > 20) {
+    // sqlcode = 17;
+    // }
+    // });
 
-    //     log.debug("Method getCommercialDb2Info3Cur completed..");
+    // log.debug("Method getCommercialDb2Info3Cur completed..");
     // }
 
     // public void getCommercialDb2Info5() {
-    //     log.debug("MethodgetCommercialDb2Info5started..");
-    //     emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
-    //     do {
-    //         getCommercialDb2Info5Cur();
-    //         sqlcode++;
-    //     } while (sqlcode > 0);
-    //     log.debug("Method getCommercialDb2Info5 completed..");
+    // log.debug("MethodgetCommercialDb2Info5started..");
+    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+    // do {
+    // getCommercialDb2Info5Cur();
+    // sqlcode++;
+    // } while (sqlcode > 0);
+    // log.debug("Method getCommercialDb2Info5 completed..");
     // }
 
     // @Transactional(readOnly = true)
     // public void getCommercialDb2Info5Cur() {
-    //     log.debug("MethodgetCommercialDb2Info5Curstarted..");
+    // log.debug("MethodgetCommercialDb2Info5Curstarted..");
 
-    //     Stream<IgetCommercialDb2Info5CurZipCursorJpaDto> ZipCursorData = getCommercialDb2Info5CurZipCursorJpa
-    //             .getZipCursorByCaBPostcode(caBPostcode);
+    // Stream<IgetCommercialDb2Info5CurZipCursorJpaDto> ZipCursorData =
+    // getCommercialDb2Info5CurZipCursorJpa
+    // .getZipCursorByCaBPostcode(caBPostcode);
 
-    //     ZipCursorData.forEach(e -> {
-    //         db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    //         db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    //         db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    //         db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    //         db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    //         db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    //         db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    //         db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    //         db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    //         dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    //         caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    //         dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    //         dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
-    //         // Convobject same as line 221
-    //         dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //         dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+    // ZipCursorData.forEach(e -> {
+    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
+    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
+    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
+    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
+    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
+    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
+    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
+    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
+    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
+    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
+    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
+    // // Convobject same as line 221
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
 
-    //     });
+    // });
 
-    //     log.debug("Method getCommercialDb2Info5Cur completed..");
+    // log.debug("Method getCommercialDb2Info5Cur completed..");
     // }
 
     // @Transactional(readOnly = true)
     // public void getClaimDb2Info1() {
-    //     log.debug("MethodgetClaimDb2Info1started..");
-    //     emVariable.setEmSqlreq(" SELECT CLAIM ");
-    //     try {
+    // log.debug("MethodgetClaimDb2Info1started..");
+    // emVariable.setEmSqlreq(" SELECT CLAIM ");
+    // try {
 
-    //         IGetPolicy5JpaDto = getPolicy5Jpa.getPolicyByDb2ClaimnumInt(db2ClaimnumInt);
+    // IGetPolicy5JpaDto = getPolicy5Jpa.getPolicyByDb2ClaimnumInt(db2ClaimnumInt);
 
-    //         wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    //         wsRequiredCaLen = wsFullClaimLen + wsRequiredCaLen;
+    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
+    // wsRequiredCaLen = wsFullClaimLen + wsRequiredCaLen;
 
-    //         if (eibcalen < wsRequiredCaLen) {
-    //             dfhcommarea.setCaReturnCode(98); /* return */
+    // if (eibcalen < wsRequiredCaLen) {
+    // dfhcommarea.setCaReturnCode(98); /* return */
 
-    //         } else {
-    //             dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    //             caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    //             db2CNum = dbClaimnumInt;
-    //             db2CPaid = db2OutIntegers.getDb2CPaidInt();
-    //             db2CValue = db2OutIntegers.getDb2CValueInt();
-    //             // Convobject same as line 221
-    //             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    //             dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
-    //         }
+    // } else {
+    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
+    // db2CNum = dbClaimnumInt;
+    // db2CPaid = db2OutIntegers.getDb2CPaidInt();
+    // db2CValue = db2OutIntegers.getDb2CValueInt();
+    // // Convobject same as line 221
+    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
+    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+    // }
 
-    //         caClaim.setCaCFiller("FINAL");
-    //     } catch (Exception e) {
-    //         log.error(e);
-    //     }
+    // caClaim.setCaCFiller("FINAL");
+    // } catch (Exception e) {
+    // log.error(e);
+    // }
 
-    //     log.debug("Method getClaimDb2Info1 completed..");
+    // log.debug("Method getClaimDb2Info1 completed..");
     // }
 
     // public void getClaimDb2Info2() {
-    //     log.debug("MethodgetClaimDb2Info2started..");
-    //     emVariable.setEmSqlreq(" SELECT CLAIM ");
-    //     do {
-    //         getClaimDb2Info2Cur();
-    //         sqlcode++;
-    //     } while (sqlcode > 0);
+    // log.debug("MethodgetClaimDb2Info2started..");
+    // emVariable.setEmSqlreq(" SELECT CLAIM ");
+    // do {
+    // getClaimDb2Info2Cur();
+    // sqlcode++;
+    // } while (sqlcode > 0);
 
-    //     log.debug("Method getClaimDb2Info2 completed..");
+    // log.debug("Method getClaimDb2Info2 completed..");
     // }
 
     // @Transactional(readOnly = true)
     // public void getClaimDb2Info2Cur() {
-    //     log.debug("MethodgetClaimDb2Info2Curstarted..");
-    //     try {
-    //         Stream<IgetClaimDb2Info2CurCusclaimCursorJpaDto> CusclaimCursorData = getClaimDb2Info2CurCusclaimCursorJpa
-    //                 .getCusclaimCursorByDb2CustomernumInt(db2CustomernumInt);
-    //         CusclaimCursorData.forEach(e -> {
-    //             dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    //             caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    //             caClaim.setCaCFiller("FINAL");
-    //         });
-    //     } catch (Exception e) {
-    //         log.error(e);
-    //     }
+    // log.debug("MethodgetClaimDb2Info2Curstarted..");
+    // try {
+    // Stream<IgetClaimDb2Info2CurCusclaimCursorJpaDto> CusclaimCursorData =
+    // getClaimDb2Info2CurCusclaimCursorJpa
+    // .getCusclaimCursorByDb2CustomernumInt(db2CustomernumInt);
+    // CusclaimCursorData.forEach(e -> {
+    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
+    // caClaim.setCaCFiller("FINAL");
+    // });
+    // } catch (Exception e) {
+    // log.error(e);
+    // }
 
-    //     log.debug("Method getClaimDb2Info2Cur completed..");
+    // log.debug("Method getClaimDb2Info2Cur completed..");
     // }
 
     // public void writeErrorMessage() {
 
-    //     log.debug("Method writeErrorMessage completed..");
+    // log.debug("Method writeErrorMessage completed..");
     // }
 
     // /* End of program */

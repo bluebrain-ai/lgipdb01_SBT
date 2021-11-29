@@ -35,11 +35,4 @@ public class Db2OutIntegers {
     private int db2CPaidInt;
     private int db2CValueInt;
 
-    public String toFixedWidthString() {
-        return db2BrokeridInt + db2PaymentInt + db2ETermSint + db2ESumassuredInt + db2EPaddingLen + db2HBedroomsSint
-                + db2HValueInt + db2MValueInt + db2MCcSint + db2MPremiumInt + db2MAccidentsInt + db2BFireperilInt
-                + db2BFirepremiumInt + db2BCrimeperilInt + db2BCrimepremiumInt + db2BFloodperilInt + db2BFloodpremiumInt
-                + db2BWeatherperilInt + db2BWeatherpremiumInt + db2BStatusInt + db2CPaidInt + db2CValueInt;
-    }
-
 }

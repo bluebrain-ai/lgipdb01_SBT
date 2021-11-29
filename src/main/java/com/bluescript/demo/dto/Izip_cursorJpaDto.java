@@ -1,44 +1,45 @@
 package com.bluescript.demo.dto;
- 
-public interface Izip_cursorJpaDto  { 
-public int getDb2CustomernumInt();
-public <DATATYPE> getDb2PolicynumInt();
 
-public <DATATYPE> getDb2Lastchanged();
+public interface Izip_cursorJpaDto {
+    public int getDb2CustomernumInt();
 
-public <DATATYPE> getDb2Issuedate();
+    public int getDb2PolicynumInt();
 
-public <DATATYPE> getDb2Expirydate();
+    public String getDb2Lastchanged();
 
-public <DATATYPE> getDb2BAddress();
+    public String getDb2Issuedate();
 
-public <DATATYPE> getDb2BPostcode();
+    public String getDb2Expirydate();
 
-public <DATATYPE> getDb2BLatitude();
+    public String getDb2BAddress();
 
-public <DATATYPE> getDb2BLongitude();
+    public String getDb2BPostcode();
 
-public <DATATYPE> getDb2BCustomer();
+    public String getDb2BLatitude();
 
-public <DATATYPE> getDb2BProptype();
+    public String getDb2BLongitude();
 
-public <DATATYPE> getDb2BFireperilInt();
+    public String getDb2BCustomer();
 
-public <DATATYPE> getDb2BFirepremiumInt();
+    public String getDb2BProptype();
 
-public <DATATYPE> getDb2BCrimeperilInt();
+    public int getDb2BFireperilInt();
 
-public <DATATYPE> getDb2BCrimepremiumInt();
+    public int getDb2BFirepremiumInt();
 
-public <DATATYPE> getDb2BFloodperilInt();
+    public int getDb2BCrimeperilInt();
 
-public <DATATYPE> getDb2BFloodpremiumInt();
+    public int getDb2BCrimepremiumInt();
 
-public <DATATYPE> getDb2BWeatherperilInt();
+    public int getDb2BFloodperilInt();
 
-public <DATATYPE> getDb2BWeatherpremiumInt();
+    public int getDb2BFloodpremiumInt();
 
-public <DATATYPE> getDb2BStatusInt();
+    public int getDb2BWeatherperilInt();
 
-public <DATATYPE> getDb2BRejectreason();
+    public int getDb2BWeatherpremiumInt();
+
+    public int getDb2BStatusInt();
+
+    public String getDb2BRejectreason();
 }

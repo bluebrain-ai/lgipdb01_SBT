@@ -1,4 +1,4 @@
-package com.bluescript.demo;
+package com.bluescript.demo.model;
 
 import org.springframework.stereotype.Component;
 
