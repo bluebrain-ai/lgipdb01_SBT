@@ -40,6 +40,7 @@ public interface ConvObjtoObj {
     // @Mapping(target = "caBrokerid", source = "db2BrokeridInt")
     // @Mapping(target = "caBrokersref", source = "db2Brokersref")
     // CaPolicyCommon db2CommonToCaPolicyCommon(IgetHousePolicyJpaDto policy);
+//--- completed
 
     @Mapping(target = "caEWithProfits", source = "db2HPropertytype")
     @Mapping(target = "caEEquities", source = "db2HBedrooms")
