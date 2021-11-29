@@ -1,8 +1,7 @@
 package com.bluescript.demo.dto;
-
-public interface Izip_cursorJpaDto {
-public <DATATYPE> getDb2CustomernumInt();
-
+ 
+public interface Izip_cursorJpaDto  { 
+public int getDb2CustomernumInt();
 public <DATATYPE> getDb2PolicynumInt();
 
 public <DATATYPE> getDb2Lastchanged();

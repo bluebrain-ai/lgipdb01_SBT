@@ -1,33 +1,19 @@
 package com.bluescript.demo.dto;
-
-public interface IGetPolicyJpaDto {
-public <DATATYPE> getdb2Issuedate();
-
-public <DATATYPE> getdb2Expirydate();
-
-public <DATATYPE> getdb2Lastchanged();
-
-public <DATATYPE> getdb2BrokeridIntindicator();
-
-public <DATATYPE> getdb2Brokersrefindicator();
-
-public <DATATYPE> getdb2PaymentIntindicator();
-
-public <DATATYPE> getdb2EWithprofits();
-
-public <DATATYPE> getdb2EEquities();
-
-public <DATATYPE> getdb2EManagedfund();
-
-public <DATATYPE> getdb2EFundname();
-
-    public int getDb2ETermSint();
-
-    public int getDb2ESumassuredInt();
-
-public <DATATYPE> getdb2ELifeassured();
-
-public <DATATYPE> getdb2EPaddingdataindicator();
-
-public <DATATYPE> getdb2EPaddingLenindicator();
-}
+ 
+public interface IGetPolicyJpaDto  { 
+public string getdb2Issuedate();
+public string getdb2Expirydate();
+public string getdb2Lastchanged();
+public int getdb2BrokeridIntindicator();
+public int getdb2Brokersrefindicator();
+public int getdb2PaymentIntindicator();
+public string getdb2EWithprofits();
+public string getdb2EEquities();
+public string getdb2EManagedfund();
+public string getdb2EFundname();
+public int getDb2ETermSint();
+public int  getDb2ESumassuredInt();
+public string getdb2ELifeassured();
+public string getdb2EPaddingdataindicator();
+public int getdb2EPaddingLenindicator();
+} 
