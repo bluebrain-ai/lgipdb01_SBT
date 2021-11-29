@@ -31,23 +31,28 @@ import reactor.core.publisher.Mono;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.models.Response;
 
-import com.bluescript.demo.dto.IGetPolicyJpaDto;
-import com.bluescript.demo.jpa.IGetPolicyJpa;
+import com.bluescript.demo.jpa.IGetClaimPolicyJpa;
+import com.bluescript.demo.jpa.IGetCommercialPolicy2Jpa;
+import com.bluescript.demo.jpa.IGetCommercialPolicyJpa;
+import com.bluescript.demo.jpa.IGetEndowmentPolicyJpa;
+import com.bluescript.demo.jpa.IGetMotorPolicyJpa;
+
+import com.bluescript.demo.jpa.IgetClaimDb2Info2CusclaimCursorJpa;
+import com.bluescript.demo.jpa.IgetCommercialDb2Info3CustCursorJpa;
+import com.bluescript.demo.jpa.IgetCommercialDb2Info5ZipCursorJpa;
 import com.bluescript.demo.jpa.IgetHousePolicyJpa;
 import com.bluescript.demo.mapper.ConvObjtoObj;
+import com.bluescript.demo.dto.IGetClaimPolicyJpaDto;
+import com.bluescript.demo.dto.IGetCommercialPolicy2JpaDto;
+import com.bluescript.demo.dto.IGetCommercialPolicyJpaDto;
+import com.bluescript.demo.dto.IGetEndowmentPolicyJpaDto;
 import com.bluescript.demo.dto.IGetMotorPolicyJpaDto;
-import com.bluescript.demo.dto.IGetPolicy2JpaDto;
 
-import com.bluescript.demo.dto.IGetPolicy3JpaDto;
-
-import com.bluescript.demo.dto.IGetPolicy4JpaDto;
-
-import com.bluescript.demo.dto.Icust_cursorJpaDto;
 import com.bluescript.demo.dto.IgetHousePolicyJpaDto;
-import com.bluescript.demo.dto.Izip_cursorJpaDto;
-import com.bluescript.demo.dto.IGetPolicy5JpaDto;
 
-import com.bluescript.demo.dto.Icusclaim_cursorJpaDto;
+import com.bluescript.demo.dto.IzipcursorJpaDto;
+import com.bluescript.demo.exception.BreakException;
+
 import com.bluescript.demo.model.WsHeader;
 import com.bluescript.demo.model.ErrorMsg;
 import com.bluescript.demo.model.EmVariable;
@@ -135,16 +140,16 @@ public class Lgipdb01 {
     private int indEPaddingdatal;
     private String icomRecord;
     @Autowired
-    private IGetPolicyJpa getPolicyJpa;
+    private IGetEndowmentPolicyJpa getEndowmentPolicyJpa;
 
-    private IGetPolicyJpaDto getPolicyJpaDto;
+    private IGetEndowmentPolicyJpaDto getEndowmentPolicyJpaDto;
     private int wsFullEndowLen;
     @Autowired
     private Db2EndowFixed db2EndowFixed;
     @Autowired
     private Db2PolicyCommon db2PolicyCommon;
     private Db2Endowment db2Endowment;
-    private IGetPolicyJpa getPolicy1Jpa;
+
     @Autowired
     private IgetHousePolicyJpa getHousePolicyJpa;
     private int wsFullHouseLen;
@@ -153,16 +158,29 @@ public class Lgipdb01 {
     private Db2Motor db2Motor;
     @Autowired
     private Db2Commercial db2Commercial;
-    private IGetPolicy2Jpa getPolicy2Jpa;
-    private IGetPolicyJpa getPolicy3Jpa;
-    private IGetPolicyJpaDto getPolicy3JpaDto;
+    private IGetMotorPolicyJpaDto getMotorPolicyJpaDto;
 
     @Autowired
     private com.bluescript.demo.mapper.ConvObjtoObj convObjToObj;
 
     private IgetHousePolicyJpaDto getHousePolicyJpaDto;
+    @Autowired
+    private IGetMotorPolicyJpa getMotorPolicyJpa;
+    @Autowired
+    private IGetCommercialPolicyJpa getCommercialPolicyJpa;
+    @Autowired
+    private IGetCommercialPolicy2Jpa getCommercialPolicy2Jpa;
+    @Autowired
+    private IgetCommercialDb2Info3CustCursorJpa getCommercialDb2Info3CustCursorJpa;
+    @Autowired
+    private IgetCommercialDb2Info5ZipCursorJpa getCommercialDb2Info5ZipCursorJpa;
+    @Autowired
+    private IGetClaimPolicyJpa getClaimPolicJpa;
+    @Autowired
+    private IgetClaimDb2Info2CusclaimCursorJpa getClaimDb2Info2CurCusclaimCursorJpa;
 
     @PostMapping("/lgipdb01")
+    @Transactional
     public ResponseEntity<Dfhcommarea> mainline(@RequestBody Dfhcommarea payload) {
 
         log.debug("Methodmainlinestarted..");
@@ -171,7 +189,7 @@ public class Lgipdb01 {
             wsRequestId = dfhcommarea.getCaRequestId();
             db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
         } else {
-          
+
             dfhcommarea.setCaReturnCode(00);
             db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
             db2PolicynumInt = (int) dfhcommarea.getCaPolicyRequest().getCaPolicyNum();
@@ -188,20 +206,21 @@ public class Lgipdb01 {
             getHouseDb2Info();
             break;
         case "01IMOT":
-            // getMotorDb2Info();
+            getMotorDb2Info();
 
             break;
         case "01ICOM":
-            // getCommercialDb2Info1();
+            getCommercialDb2Info1();
             break;
         case "02ICOM":
-            // getCommercialDb2Info2();
+            getCommercialDb2Info2();
             break;
         case "03ICOM":
-            // getCommercialDb2Info3();
+            getCommercialDb2Info3();
+
             break;
         case "05ICOM":
-            // getCommercialDb2Info5();
+            getCommercialDb2Info5();
             break;
         case "01ICLM":
             db2ClaimnumInt = (int) dfhcommarea.getCaPolicyRequest().getCaClaim().getCaCNum();
@@ -226,23 +245,23 @@ public class Lgipdb01 {
 
         try {
             log.warn("db2CustomernumInt:" + db2CustomernumInt + " db2PolicynumInt:" + db2PolicynumInt);
-            getPolicyJpaDto = getPolicyJpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
-                    db2PolicynumInt);
-            log.warn(getPolicyJpaDto.toString());
-            if (getPolicyJpaDto != null) {
+            IGetEndowmentPolicyJpaDto getEndowmentPolicyJpaDto = getEndowmentPolicyJpa
+                    .getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
+
+            if (getEndowmentPolicyJpaDto != null) {
 
                 // all individual moves are taken care directly with mapper .. so explict moves
                 // are removed
-                caPolicyCommon = convObjToObj.db2CommonToCaPolicyCommon(getPolicyJpaDto);
-                caEndowment = convObjToObj.db2EndowToCaEndowment(getPolicyJpaDto);
+                caPolicyCommon = convObjToObj.db2CommonToCaPolicyCommon(getEndowmentPolicyJpaDto);
+                caEndowment = convObjToObj.db2EndowToCaEndowment(getEndowmentPolicyJpaDto);
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaEndowment(caEndowment);
 
                 log.warn("caEndowment:" + caEndowment.toString());
                 log.warn("caPolicyCommon:" + caPolicyCommon.toString());
 
-                if (getPolicyJpaDto.getDb2EPaddingLen() != null) {
-                    endPolicyPos = getPolicyJpaDto.getDb2EPaddingLen();
+                if (getEndowmentPolicyJpaDto.getDb2EPaddingLen() != null) {
+                    endPolicyPos = getEndowmentPolicyJpaDto.getDb2EPaddingLen();
                 }
                 String caPaddingData = dfhcommarea.getCaPolicyRequest().getCaEndowment().getCaEPaddingData();
                 dfhcommarea.getCaPolicyRequest().getCaEndowment().setCaEPaddingData(caPaddingData + "FINAL");
@@ -273,7 +292,7 @@ public class Lgipdb01 {
             if (getHousePolicyJpaDto.getDb2PaymentInt() != null) {
                 db2PolicyCommon.setDb2Payment(getHousePolicyJpaDto.getDb2PaymentInt());
             }
-           
+
             caPolicyCommon = convObjToObj.db2HCommonToCaPolicyCommon(getHousePolicyJpaDto);
             caHouse = convObjToObj.db2HouseToCaHouse(getHousePolicyJpaDto);
 
@@ -295,282 +314,234 @@ public class Lgipdb01 {
 
     @Transactional(readOnly = true)
     public void getMotorDb2Info() {
-    log.debug("MethodgetMotorDb2Infostarted..");
-    emVariable.setEmSqlreq(" SELECT MOTOR ");
+        log.debug("MethodgetMotorDb2Infostarted..");
+        emVariable.setEmSqlreq(" SELECT MOTOR ");
 
-    try {
-        IGetMotorPolicyJpaDto getMotorPolicyJpaDto=
-    getPolicy2Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
-    db2PolicynumInt);
+        try {
+            IGetMotorPolicyJpaDto getMotorPolicyJpaDto = getMotorPolicyJpa
+                    .getMotorPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
 
-    wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    wsRequiredCaLen = wsFullMotorLen + wsRequiredCaLen;
-    if (eibcalen < wsRequiredCaLen) {
-    dfhcommarea.setCaReturnCode(98); /* return */
+            caPolicyCommon = convObjToObj.db2MCommonToCaPolicyCommon(getMotorPolicyJpaDto);
+            caMotor = convObjToObj.db2MotorToCaMotor(getMotorPolicyJpaDto);
 
-    } else {
-    if (indBrokerid != minusOne) {
-    db2PolicyCommon.setDb2Brokerid(db2OutIntegers.getDb2BrokeridInt());
-    }
-    if (indPayment != minusOne) {
-    db2PolicyCommon.setDb2Payment(db2OutIntegers.getDb2PaymentInt());
-    }
-    // MOVE DB2-M-CC-SINT TO DB2-M-CC
-    // MOVE DB2-M-VALUE-INT TO DB2-M-VALUE
-    // MOVE DB2-M-PREMIUM-INT TO DB2-M-PREMIUM
-    // MOVE DB2-M-ACCIDENTS-INT TO DB2-M-ACCIDENTS
+            log.warn("caHouse:" + caHouse.toString());
+            log.warn("caPolicyCommon:" + caPolicyCommon.toString());
 
-    db2Motor.setDb2MCc(db2OutIntegers.getDb2MCcSint());
-    db2Motor.setDb2MValue(db2OutIntegers.getDb2MValueInt());
-    db2Motor.setDb2MPremium(db2OutIntegers.getDb2MPremiumInt());
-    db2Motor.setDb2MAccidents(db2OutIntegers.getDb2MAccidentsInt());
+            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+            dfhcommarea.getCaPolicyRequest().setCaMotor(caMotor);
+            caMotor.setCaMFiller("FINAL");
 
-    dfhcommarea.getCaPolicyRequest().getCaMotor().setCaMPremium(db2OutIntegers.getDb2MPremiumInt());
-    dfhcommarea.getCaPolicyRequest().getCaMotor().setCaMAccidents(db2OutIntegers.getDb2MAccidentsInt());
-    // Convobject same as line 221
-    dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    dfhcommarea.getCaPolicyRequest().setCaMototor(db2Motor);
-    }
-    caMotor.setCaMFiller("FINAL");
-    } catch (Exception e) {
-    dfhcommarea.setCaReturnCode(01);
-    dfhcommarea.setCaReturnCode(90);
-    //writeErrorMessage();
+        } catch (Exception e) {
+            dfhcommarea.setCaReturnCode(01);
+            dfhcommarea.setCaReturnCode(90);
+            // writeErrorMessage();
 
+        }
+
+        log.debug("Method getMotorDb2Info completed..");
     }
 
-    log.debug("Method getMotorDb2Info completed..");
+    @Transactional(readOnly = true)
+    public void getCommercialDb2Info1() {
+        log.debug("MethodgetCommercialDb2Info1started..");
+        emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+
+        try {
+            IGetCommercialPolicy2JpaDto getCommercialPolicyJpaDto = getCommercialPolicyJpa
+                    .getCommercialPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
+
+            caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(getCommercialPolicyJpaDto);
+            log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+            caCommercial = convObjToObj.db2CommercialToCaCommercial(getCommercialPolicyJpaDto);
+            log.warn("caCommercial:" + caCommercial.toString());
+
+            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+            dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
+            caCommercial.setCaBFiller("FINAL");
+        } catch (Exception e) {
+            dfhcommarea.setCaReturnCode(01);
+            dfhcommarea.setCaReturnCode(90);
+            // writeErrorMessage();
+        }
+
+        log.debug("Method getCommercialDb2Info1 completed..");
     }
 
-    // @Transactional(readOnly = true)
-    // public void getCommercialDb2Info1() {
-    // log.debug("MethodgetCommercialDb2Info1started..");
-    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+    @Transactional(readOnly = true)
+    public void getCommercialDb2Info2() {
+        log.debug("MethodgetCommercialDb2Info2started..");
+        emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+        try {
+            IGetCommercialPolicy2JpaDto getCommercialPolicy2JpaDto = getCommercialPolicy2Jpa
+                    .getCommercialPolicy2ByDb2PolicynumInt(db2PolicynumInt);
 
-    // try {
-    // getPolicy3JpaDto =
-    // getPolicy3Jpa.getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt,
-    // db2PolicynumInt);
+            dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+            caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(getCommercialPolicy2JpaDto);
+            log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+            caCommercial = convObjToObj.db2CommercialToCaCommercial(getCommercialPolicy2JpaDto);
+            log.warn("caCommercial2:" + caCommercial.toString());
 
-    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    // wsRequiredCaLen = wsFullCommLen + wsRequiredCaLen;
-    // if (eibcalen < wsRequiredCaLen) {
-    // dfhcommarea.setCaReturnCode(98); /* return */
+            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+            dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
-    // } else {
+            caCommercial.setCaBFiller("FINAL");
+        } catch (Exception e) {
+            dfhcommarea.setCaReturnCode(01);
+            dfhcommarea.setCaReturnCode(90);
+            // writeErrorMessage();
+        }
+        log.debug("Method getCommercialDb2Info2 completed..");
+    }
 
-    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    // // Convobject same as line 221
-    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
-    // }
-    // caCommercial.setCaBFiller("FINAL");
-    // } catch (Exception e) {
-    // dfhcommarea.setCaReturnCode(01);
-    // dfhcommarea.setCaReturnCode(90);
-    // writeErrorMessage();
-    // }
+    @Transactional(readOnly = true)
+    public void getCommercialDb2Info3() {
+        log.debug("MethodgetCommercialDb2Info3started..");
+        emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
+        icomRecordCount = 0;
+        getCommercialDb2Info3Cur();
+        icomDataLength = icomRecordCount * 1202;
+        // Put container icomData copied from icomrecord
+        // put container icomcount copied from icount record
+        int icomCount = icomRecordCount;
+        log.warn("icomCount:" + icomCount);
+        log.debug("Method getCommercialDb2Info3 completed..");
+    }
 
-    // log.debug("Method getCommercialDb2Info1 completed..");
-    // }
+    @Transactional(readOnly = true)
+    public void getCommercialDb2Info3Cur() {
+        log.debug("MethodgetCommercialDb2Info3Curstarted..");
+        // addressOfDfhcommarea;
 
-    // @Transactional(readOnly = true)
-    // public void getCommercialDb2Info2() {
-    // log.debug("MethodgetCommercialDb2Info2started..");
-    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
-    // try {
-    // IGetPolicy4JpaDto getPolicy4JpaDto =
-    // getPolicy4Jpa.getPolicyByDb2PolicynumInt(db2PolicynumInt);
+        try (Stream<IGetCommercialPolicy2JpaDto> CustCursorData = getCommercialDb2Info3CustCursorJpa
+                .getCustCursorByDb2CustomernumInt(db2CustomernumInt)) {
+            CustCursorData.forEach(e -> {
 
-    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    // wsRequiredCaLen = wsFullCommLen + wsRequiredCaLen;
-    // if (eibcalen < wsRequiredCaLen) {
-    // dfhcommarea.setCaReturnCode(98); /* return */
+                dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+                caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
+                dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+                caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(e);
+                log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+                caCommercial = convObjToObj.db2CommercialToCaCommercial(e);
+                log.warn("caCommercial2:" + caCommercial.toString());
 
-    // } else {
-    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    // // Convobject same as line 221
-    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+                dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+                dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
-    // }
-    // caCommercial.setCaBFiller("FINAL");
-    // } catch (Exception e) {
-    // dfhcommarea.setCaReturnCode(01);
-    // dfhcommarea.setCaReturnCode(90);
-    // writeErrorMessage();
-    // }
-    // log.debug("Method getCommercialDb2Info2 completed..");
-    // }
+                icomRecordCount = 1 + icomRecordCount;
+                log.warn("icomRecordCount:" + icomRecordCount);
+                // Set icom-pointer to address of CA-B-FILLER
+                if (icomRecordCount >= 20) {
+                    // sqlcode = 17;
+                    throw new BreakException("ForEach Exit");
+                }
+            });
+        } catch (BreakException be) {
+            log.warn("ForEach loop exit");
+        } catch (Exception e) {
+            log.error(e);
+        }
 
-    // public void getCommercialDb2Info3() {
-    // log.debug("MethodgetCommercialDb2Info3started..");
-    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
-    // icomRecordCount = 0;
-    // do {
-    // getCommercialDb2Info3Cur();
-    // sqlcode++;
-    // } while (sqlcode > 0);
-    // icomDataLength = icomRecordCount * 1202;
-    // // Put container icomData copied from icomrecord
-    // // put container icomcount copied from icount record
-    // icomCount = icomRecordCount;
-    // log.debug("Method getCommercialDb2Info3 completed..");
-    // }
+        log.debug("Method getCommercialDb2Info3Cur completed..");
+    }
 
-    // @Transactional(readOnly = true)
-    // public void getCommercialDb2Info3Cur() {
-    // log.debug("MethodgetCommercialDb2Info3Curstarted..");
-    // // addressOfDfhcommarea;
-    // Stream<IgetCommercialDb2Info3CurCustCursorJpa> CustCursorData =
-    // getCommercialDb2Info3CurCustCursorJpa
-    // .getCustCursorByDb2CustomernumInt(db2CustomernumInt);
-    // CustCursorData.forEach(e -> {
-    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    // // Convobject same as line 221
-    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+    public void getCommercialDb2Info5() {
+        log.debug("MethodgetCommercialDb2Info5started..");
+        emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
 
-    // icomRecordCount = 1 + icomRecordCount;
-    // // Set icom-pointer to address of CA-B-FILLER
-    // if (icomRecordCount > 20) {
-    // sqlcode = 17;
-    // }
-    // });
+        getCommercialDb2Info5Cur();
 
-    // log.debug("Method getCommercialDb2Info3Cur completed..");
-    // }
+        log.debug("Method getCommercialDb2Info5 completed..");
+    }
 
-    // public void getCommercialDb2Info5() {
-    // log.debug("MethodgetCommercialDb2Info5started..");
-    // emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
-    // do {
-    // getCommercialDb2Info5Cur();
-    // sqlcode++;
-    // } while (sqlcode > 0);
-    // log.debug("Method getCommercialDb2Info5 completed..");
-    // }
+    @Transactional(readOnly = true)
+    public void getCommercialDb2Info5Cur() {
+        log.debug("MethodgetCommercialDb2Info5Curstarted..");
 
-    // @Transactional(readOnly = true)
-    // public void getCommercialDb2Info5Cur() {
-    // log.debug("MethodgetCommercialDb2Info5Curstarted..");
+        try (Stream<IGetCommercialPolicy2JpaDto> ZipCursorData = getCommercialDb2Info5ZipCursorJpa
+                .getZipCursorByCaBPostcode(dfhcommarea.getCaPolicyRequest().getCaCommercial().getCaBPostcode())) {
 
-    // Stream<IgetCommercialDb2Info5CurZipCursorJpaDto> ZipCursorData =
-    // getCommercialDb2Info5CurZipCursorJpa
-    // .getZipCursorByCaBPostcode(caBPostcode);
+            ZipCursorData.forEach(e -> {
 
-    // ZipCursorData.forEach(e -> {
-    // db2Commercial.setDb2BFireperil(db2OutIntegers.getDb2BFireperilInt());
-    // db2Commercial.setDb2BFirepremium(db2OutIntegers.getDb2BFirepremiumInt());
-    // db2Commercial.setDb2BCrimeperil(db2OutIntegers.getDb2BCrimeperilInt());
-    // db2Commercial.setDb2BCrimepremium(db2OutIntegers.getDb2BCrimepremiumInt());
-    // db2Commercial.setDb2BFloodperil(db2OutIntegers.getDb2BFloodperilInt());
-    // db2Commercial.setDb2BFloodpremium(db2OutIntegers.getDb2BFloodpremiumInt());
-    // db2Commercial.setDb2BWeatherperil(db2OutIntegers.getDb2BWeatherperilInt());
-    // db2Commercial.setDb2BWeatherpremium(db2OutIntegers.getDb2BWeatherpremiumInt());
-    // db2Commercial.setDb2BStatus(db2OutIntegers.getDb2BStatusInt());
-    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    // dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
-    // // Convobject same as line 221
-    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
+                dfhcommarea.setCaCustomerNum(e.getDb2CustomernumInt());
+                dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
 
-    // });
+                caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(e);
+                log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+                caCommercial = convObjToObj.db2CommercialToCaCommercial(e);
+                log.warn("caCommercial2:" + caCommercial.toString());
 
-    // log.debug("Method getCommercialDb2Info5Cur completed..");
-    // }
+                dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+                dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
-    // @Transactional(readOnly = true)
-    // public void getClaimDb2Info1() {
-    // log.debug("MethodgetClaimDb2Info1started..");
-    // emVariable.setEmSqlreq(" SELECT CLAIM ");
-    // try {
+            });
 
-    // IGetPolicy5JpaDto = getPolicy5Jpa.getPolicyByDb2ClaimnumInt(db2ClaimnumInt);
+        } catch (Exception e) {
+            log.error(e);
+        }
+        log.debug("Method getCommercialDb2Info5Cur completed..");
+    }
 
-    // wsRequiredCaLen = wsCaHeadertrailerLen + wsRequiredCaLen;
-    // wsRequiredCaLen = wsFullClaimLen + wsRequiredCaLen;
+    @Transactional(readOnly = true)
+    public void getClaimDb2Info1() {
+        log.debug("MethodgetClaimDb2Info1started..");
+        emVariable.setEmSqlreq(" SELECT CLAIM ");
+        try {
 
-    // if (eibcalen < wsRequiredCaLen) {
-    // dfhcommarea.setCaReturnCode(98); /* return */
+            IGetClaimPolicyJpaDto getClaimPolicyJpaDto = getClaimPolicJpa.getPolicyByDb2ClaimnumInt(db2ClaimnumInt);
+            dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+            dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
 
-    // } else {
-    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    // db2CNum = dbClaimnumInt;
-    // db2CPaid = db2OutIntegers.getDb2CPaidInt();
-    // db2CValue = db2OutIntegers.getDb2CValueInt();
-    // // Convobject same as line 221
-    // dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(db2PolicyCommon);
-    // dfhcommarea.getCaPolicyRequest().setCaCommercial(db2Commercial);
-    // }
+            // caPolicyCommon = convObjToObj.db2ClaimCommonToCaPolicyCommon(getClaimPolicyJpaDto);
+            // log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+            caClaim = convObjToObj.db2ClaimToCaClaim(getClaimPolicyJpaDto);
+            log.warn("caCommercial2:" + caCommercial.toString());
 
-    // caClaim.setCaCFiller("FINAL");
-    // } catch (Exception e) {
-    // log.error(e);
-    // }
+            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+            dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
-    // log.debug("Method getClaimDb2Info1 completed..");
-    // }
+            caClaim.setCaCFiller("FINAL");
+        } catch (Exception e) {
+            log.error(e);
+        }
 
-    // public void getClaimDb2Info2() {
-    // log.debug("MethodgetClaimDb2Info2started..");
-    // emVariable.setEmSqlreq(" SELECT CLAIM ");
-    // do {
-    // getClaimDb2Info2Cur();
-    // sqlcode++;
-    // } while (sqlcode > 0);
+        log.debug("Method getClaimDb2Info1 completed..");
+    }
 
-    // log.debug("Method getClaimDb2Info2 completed..");
-    // }
+    public void getClaimDb2Info2() {
+        log.debug("MethodgetClaimDb2Info2started..");
+        emVariable.setEmSqlreq(" SELECT CLAIM ");
 
-    // @Transactional(readOnly = true)
-    // public void getClaimDb2Info2Cur() {
-    // log.debug("MethodgetClaimDb2Info2Curstarted..");
-    // try {
-    // Stream<IgetClaimDb2Info2CurCusclaimCursorJpaDto> CusclaimCursorData =
-    // getClaimDb2Info2CurCusclaimCursorJpa
-    // .getCusclaimCursorByDb2CustomernumInt(db2CustomernumInt);
-    // CusclaimCursorData.forEach(e -> {
-    // dfhcommarea.setCaCustomerNum(db2CustomernumInt);
-    // caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
-    // caClaim.setCaCFiller("FINAL");
-    // });
-    // } catch (Exception e) {
-    // log.error(e);
-    // }
+        getClaimDb2Info2Cur();
 
-    // log.debug("Method getClaimDb2Info2Cur completed..");
-    // }
+        log.debug("Method getClaimDb2Info2 completed..");
+    }
+
+    @Transactional(readOnly = true)
+    public void getClaimDb2Info2Cur() {
+        log.debug("MethodgetClaimDb2Info2Curstarted..");
+        try {
+            Stream<IGetClaimPolicyJpaDto> CusclaimCursorData = getClaimDb2Info2CurCusclaimCursorJpa
+                    .getCusclaimCursorByDb2CustomernumInt(db2CustomernumInt);
+            CusclaimCursorData.forEach(e -> {
+                dfhcommarea.setCaCustomerNum(db2CustomernumInt);
+                caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
+
+                // caPolicyCommon = convObjToObj.db2ClaimCommonToCaPolicyCommon(e);
+                // log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+                caClaim = convObjToObj.db2ClaimToCaClaim(e);
+                log.warn("caClaim:" + caCommercial.toString());
+
+                dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+                dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
+                caClaim.setCaCFiller("FINAL");
+
+            });
+        } catch (Exception e) {
+            log.error(e);
+        }
+
+        log.debug("Method getClaimDb2Info2Cur completed..");
+    }
 
     // public void writeErrorMessage() {
 

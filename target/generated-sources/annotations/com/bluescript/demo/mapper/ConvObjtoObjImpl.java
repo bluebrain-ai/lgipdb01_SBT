@@ -1,9 +1,15 @@
 package com.bluescript.demo.mapper;
 
-import com.bluescript.demo.dto.IGetPolicyJpaDto;
+import com.bluescript.demo.dto.IGetClaimPolicyJpaDto;
+import com.bluescript.demo.dto.IGetCommercialPolicy2JpaDto;
+import com.bluescript.demo.dto.IGetEndowmentPolicyJpaDto;
+import com.bluescript.demo.dto.IGetMotorPolicyJpaDto;
 import com.bluescript.demo.dto.IgetHousePolicyJpaDto;
+import com.bluescript.demo.model.CaClaim;
+import com.bluescript.demo.model.CaCommercial;
 import com.bluescript.demo.model.CaEndowment;
 import com.bluescript.demo.model.CaHouse;
+import com.bluescript.demo.model.CaMotor;
 import com.bluescript.demo.model.CaPolicyCommon;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
@@ -16,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class ConvObjtoObjImpl implements ConvObjtoObj {
 
     @Override
-    public CaPolicyCommon db2CommonToCaPolicyCommon(IGetPolicyJpaDto policy) {
+    public CaPolicyCommon db2CommonToCaPolicyCommon(IGetEndowmentPolicyJpaDto policy) {
         if ( policy == null ) {
             return null;
         }
@@ -33,7 +39,7 @@ public class ConvObjtoObjImpl implements ConvObjtoObj {
     }
 
     @Override
-    public CaEndowment db2EndowToCaEndowment(IGetPolicyJpaDto endowDto) {
+    public CaEndowment db2EndowToCaEndowment(IGetEndowmentPolicyJpaDto endowDto) {
         if ( endowDto == null ) {
             return null;
         }
@@ -91,5 +97,132 @@ public class ConvObjtoObjImpl implements ConvObjtoObj {
         caHouse.setCaHPostcode( houseDto.getDb2HPostcode() );
 
         return caHouse;
+    }
+
+    @Override
+    public CaPolicyCommon db2MCommonToCaPolicyCommon(IGetMotorPolicyJpaDto motorpolicy) {
+        if ( motorpolicy == null ) {
+            return null;
+        }
+
+        CaPolicyCommon caPolicyCommon = new CaPolicyCommon();
+
+        caPolicyCommon.setCaIssueDate( motorpolicy.getDb2Issuedate() );
+        caPolicyCommon.setCaExpiryDate( motorpolicy.getDb2Expirydate() );
+        caPolicyCommon.setCaLastchanged( motorpolicy.getDb2Lastchanged() );
+        if ( motorpolicy.getDb2BrokeridInt() != null ) {
+            caPolicyCommon.setCaBrokerid( motorpolicy.getDb2BrokeridInt() );
+        }
+        caPolicyCommon.setCaBrokersref( motorpolicy.getDb2Brokersref() );
+
+        return caPolicyCommon;
+    }
+
+    @Override
+    public CaMotor db2MotorToCaMotor(IGetMotorPolicyJpaDto getMotorPolicyJpaDto) {
+        if ( getMotorPolicyJpaDto == null ) {
+            return null;
+        }
+
+        CaMotor caMotor = new CaMotor();
+
+        caMotor.setCaMMake( getMotorPolicyJpaDto.getDb2MMake() );
+        caMotor.setCaMModel( getMotorPolicyJpaDto.getDb2MModel() );
+        if ( getMotorPolicyJpaDto.getDb2MValueInt() != null ) {
+            caMotor.setCaMValue( getMotorPolicyJpaDto.getDb2MValueInt() );
+        }
+        caMotor.setCaMRegnumber( getMotorPolicyJpaDto.getDb2MRegnumber() );
+        caMotor.setCaMColour( getMotorPolicyJpaDto.getDb2MColour() );
+        if ( getMotorPolicyJpaDto.getDb2MCcSint() != null ) {
+            caMotor.setCaMCc( getMotorPolicyJpaDto.getDb2MCcSint() );
+        }
+        caMotor.setCaMManufactured( getMotorPolicyJpaDto.getDb2MManufactured() );
+        if ( getMotorPolicyJpaDto.getDb2MPremiumInt() != null ) {
+            caMotor.setCaMPremium( getMotorPolicyJpaDto.getDb2MPremiumInt() );
+        }
+        if ( getMotorPolicyJpaDto.getDb2MAccidentsInt() != null ) {
+            caMotor.setCaMAccidents( getMotorPolicyJpaDto.getDb2MAccidentsInt() );
+        }
+
+        return caMotor;
+    }
+
+    @Override
+    public CaPolicyCommon db2CommercialCommonToCaPolicyCommon(IGetCommercialPolicy2JpaDto commpolicy) {
+        if ( commpolicy == null ) {
+            return null;
+        }
+
+        CaPolicyCommon caPolicyCommon = new CaPolicyCommon();
+
+        caPolicyCommon.setCaIssueDate( commpolicy.getdb2Issuedate() );
+        caPolicyCommon.setCaExpiryDate( commpolicy.getdb2Expirydate() );
+        caPolicyCommon.setCaLastchanged( commpolicy.getdb2Lastchanged() );
+
+        return caPolicyCommon;
+    }
+
+    @Override
+    public CaCommercial db2CommercialToCaCommercial(IGetCommercialPolicy2JpaDto commercialDto) {
+        if ( commercialDto == null ) {
+            return null;
+        }
+
+        CaCommercial caCommercial = new CaCommercial();
+
+        caCommercial.setCaBAddress( commercialDto.getdb2BAddress() );
+        caCommercial.setCaBPostcode( commercialDto.getdb2BPostcode() );
+        caCommercial.setCaBLatitude( commercialDto.getdb2BLatitude() );
+        caCommercial.setCaBLongitude( commercialDto.getdb2BLongitude() );
+        caCommercial.setCaBCustomer( commercialDto.getdb2BCustomer() );
+        caCommercial.setCaBProptype( commercialDto.getdb2BProptype() );
+        if ( commercialDto.getDb2BFireperilInt() != null ) {
+            caCommercial.setCaBFireperil( commercialDto.getDb2BFireperilInt() );
+        }
+        if ( commercialDto.getDb2BFirepremiumInt() != null ) {
+            caCommercial.setCaBFirepremium( commercialDto.getDb2BFirepremiumInt() );
+        }
+        if ( commercialDto.getDb2BCrimeperilInt() != null ) {
+            caCommercial.setCaBCrimeperil( commercialDto.getDb2BCrimeperilInt() );
+        }
+        if ( commercialDto.getDb2BCrimepremiumInt() != null ) {
+            caCommercial.setCaBCrimepremium( commercialDto.getDb2BCrimepremiumInt() );
+        }
+        if ( commercialDto.getDb2BFloodperilInt() != null ) {
+            caCommercial.setCaBFloodperil( commercialDto.getDb2BFloodperilInt() );
+        }
+        if ( commercialDto.getDb2BFloodpremiumInt() != null ) {
+            caCommercial.setCaBFloodpremium( commercialDto.getDb2BFloodpremiumInt() );
+        }
+        if ( commercialDto.getDb2BWeatherperilInt() != null ) {
+            caCommercial.setCaBWeatherperil( commercialDto.getDb2BWeatherperilInt() );
+        }
+        if ( commercialDto.getDb2BWeatherpremiumInt() != null ) {
+            caCommercial.setCaBWeatherpremium( commercialDto.getDb2BWeatherpremiumInt() );
+        }
+        if ( commercialDto.getDb2BStatusInt() != null ) {
+            caCommercial.setCaBStatus( commercialDto.getDb2BStatusInt() );
+        }
+        caCommercial.setCaBRejectreason( commercialDto.getdb2BRejectreason() );
+
+        return caCommercial;
+    }
+
+    @Override
+    public CaClaim db2ClaimToCaClaim(IGetClaimPolicyJpaDto claimDto) {
+        if ( claimDto == null ) {
+            return null;
+        }
+
+        CaClaim caClaim = new CaClaim();
+
+        caClaim.setCaCNum( claimDto.getDb2ClaimnumInt() );
+        caClaim.setCaCDate( claimDto.getdb2CDate() );
+        caClaim.setCaCPaid( claimDto.getDb2CPaidInt() );
+        caClaim.setCaCValue( claimDto.getDb2CValueInt() );
+        caClaim.setCaCCause( claimDto.getdb2CCause() );
+        caClaim.setCaCObservations( claimDto.getdb2CObservations() );
+
+        return caClaim;
     }
 }

@@ -7,27 +7,27 @@ public interface IGetMotorPolicyJpaDto {
 
     public String getDb2Lastchanged();
 
-    public int getDb2BrokeridIntindicator();
+    public Integer getDb2BrokeridInt();
 
-    public int getDb2Brokersrefindicator();
+    public String getDb2Brokersref();
 
-    public int getDb2PaymentIntindicator();
+    public Integer getDb2PaymentInt();
 
     public String getDb2MMake();
 
     public String getDb2MModel();
 
-    public int getDb2MValueInt();
+    public Integer getDb2MValueInt();
 
     public String getDb2MRegnumber();
 
     public String getDb2MColour();
 
-    public int getDb2MCcSint();
+    public Integer getDb2MCcSint();
 
     public String getDb2MManufactured();
 
-    public int getDb2MPremiumInt();
+    public Integer getDb2MPremiumInt();
 
-    public int getDb2MAccidentsInt();
+    public Integer getDb2MAccidentsInt();
 }

@@ -10,10 +10,11 @@ import org.springframework.stereotype.Component;
 import com.bluescript.demo.model.CaCustomerRequest;
 import com.bluescript.demo.model.CaCustsecrRequest;
 import com.bluescript.demo.model.CaPolicyRequest;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Data
 @Component
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Dfhcommarea {
     private String caRequestId;
     private int caReturnCode;
