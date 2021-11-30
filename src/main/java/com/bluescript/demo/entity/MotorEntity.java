@@ -27,24 +27,24 @@ public class MotorEntity implements Serializable {
 
     @Id
     @Column(name = "POLICYNUMBER")
-    private int policyNumber;
+    private Integer policyNumber;
     @Column(name = "MAKE")
     private String make;
     @Column(name = "MODEL")
     private String model;
     @Column(name = "VALUE")
-    private int value;
+    private Integer value;
     @Column(name = "REGNUMBER")
     private String regnumber;
     @Column(name = "COLOUR")
     private String colour;
     @Column(name = "CC")
-    private int cc;
+    private Integer cc;
     @Column(name = "YEAROFMANUFACTURE")
     private String yearofmanufacture;
     @Column(name = "PREMIUM")
-    private int premium;
+    private Integer premium;
     @Column(name = "ACCIDENTS")
-    private int accidents;
+    private Integer accidents;
 
 }

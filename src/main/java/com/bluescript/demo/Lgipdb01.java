@@ -333,18 +333,21 @@ public class Lgipdb01 {
             IGetMotorPolicyJpaDto getMotorPolicyJpaDto = getMotorPolicyJpa
                     .getMotorPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
 
-            caPolicyCommon = convObjToObj.db2MCommonToCaPolicyCommon(getMotorPolicyJpaDto);
-            caMotor = convObjToObj.db2MotorToCaMotor(getMotorPolicyJpaDto);
+            if (getMotorPolicyJpaDto != null) {
+                caPolicyCommon = convObjToObj.db2MCommonToCaPolicyCommon(getMotorPolicyJpaDto);
+                caMotor = convObjToObj.db2MotorToCaMotor(getMotorPolicyJpaDto);
 
-            log.warn("caHouse:" + caHouse.toString());
-            log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+                log.warn("caHouse:" + caHouse.toString());
+                log.warn("caPolicyCommon:" + caPolicyCommon.toString());
 
-            dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
-            dfhcommarea.getCaPolicyRequest().setCaMotor(caMotor);
-            caMotor.setCaMFiller("FINAL");
-
+                dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
+                dfhcommarea.getCaPolicyRequest().setCaMotor(caMotor);
+                caMotor.setCaMFiller("FINAL");
+            } else {
+                dfhcommarea.setCaReturnCode(01);
+            }
         } catch (Exception e) {
-            dfhcommarea.setCaReturnCode(01);
+            log.error(e);
             dfhcommarea.setCaReturnCode(90);
             writeErrorMessage();
 
@@ -569,8 +572,7 @@ public class Lgipdb01 {
         WebClient webclientBuilder = WebClient.create(LGSTSQ_HOST);
         try {
             Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                    .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class)
-                    .timeout(Duration.ofMillis(10_000));
+                    .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);// .timeout(Duration.ofMillis(10_000));
             errorMsg = lgstsqResp.block();
         } catch (Exception e) {
             log.error(e);
@@ -579,8 +581,7 @@ public class Lgipdb01 {
             if (eibcalen < 91) {
                 try {
                     Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                            .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class)
-                            .timeout(Duration.ofMillis(10_000));
+                            .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);// .timeout(Duration.ofMillis(10_000));
                     errorMsg = lgstsqResp.block();
                 } catch (Exception e) {
                     log.error(e);
@@ -589,8 +590,7 @@ public class Lgipdb01 {
             } else {
                 try {
                     Mono<String> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                            .body(Mono.just(caErrorMsg), String.class).retrieve().bodyToMono(String.class)
-                            .timeout(Duration.ofMillis(10_000));
+                            .body(Mono.just(caErrorMsg), String.class).retrieve().bodyToMono(String.class);// .timeout(Duration.ofMillis(10_000));
                     caErrorMsg = lgstsqResp.block();
                 } catch (Exception e) {
                     log.error(e);
