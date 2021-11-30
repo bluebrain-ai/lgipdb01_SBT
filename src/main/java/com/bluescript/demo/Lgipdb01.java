@@ -1,11 +1,17 @@
 package com.bluescript.demo;
 
+import java.net.URI;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -179,6 +185,12 @@ public class Lgipdb01 {
     @Autowired
     private IgetClaimDb2Info2CusclaimCursorJpa getClaimDb2Info2CurCusclaimCursorJpa;
 
+    @Value("${api.LGSTSQ.host}")
+    private String LGSTSQ_HOST;
+    @Value("${api.LGSTSQ.uri}")
+    private String LGSTSQ_URI;
+    private String caErrorMsg;
+
     @PostMapping("/lgipdb01")
     @Transactional
     public ResponseEntity<Dfhcommarea> mainline(@RequestBody Dfhcommarea payload) {
@@ -270,7 +282,7 @@ public class Lgipdb01 {
         } catch (Exception e) { // no row found 01
             log.error(e);
             dfhcommarea.setCaReturnCode(90);
-            // writeErrorMessage();
+            writeErrorMessage();
         }
 
         log.debug("Method getEndowDb2Info completed..");
@@ -307,7 +319,7 @@ public class Lgipdb01 {
             log.error(e);
             dfhcommarea.setCaReturnCode(01); // No row found
             dfhcommarea.setCaReturnCode(90);
-            // writeErrorMessage();
+            writeErrorMessage();
         }
         log.debug("Method getHouseDb2Info completed..");
     }
@@ -334,7 +346,7 @@ public class Lgipdb01 {
         } catch (Exception e) {
             dfhcommarea.setCaReturnCode(01);
             dfhcommarea.setCaReturnCode(90);
-            // writeErrorMessage();
+            writeErrorMessage();
 
         }
 
@@ -361,7 +373,7 @@ public class Lgipdb01 {
         } catch (Exception e) {
             dfhcommarea.setCaReturnCode(01);
             dfhcommarea.setCaReturnCode(90);
-            // writeErrorMessage();
+            writeErrorMessage();
         }
 
         log.debug("Method getCommercialDb2Info1 completed..");
@@ -388,7 +400,7 @@ public class Lgipdb01 {
         } catch (Exception e) {
             dfhcommarea.setCaReturnCode(01);
             dfhcommarea.setCaReturnCode(90);
-            // writeErrorMessage();
+            writeErrorMessage();
         }
         log.debug("Method getCommercialDb2Info2 completed..");
     }
@@ -491,7 +503,8 @@ public class Lgipdb01 {
             dfhcommarea.setCaCustomerNum(db2CustomernumInt);
             dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
 
-            // caPolicyCommon = convObjToObj.db2ClaimCommonToCaPolicyCommon(getClaimPolicyJpaDto);
+            // caPolicyCommon =
+            // convObjToObj.db2ClaimCommonToCaPolicyCommon(getClaimPolicyJpaDto);
             // log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
             caClaim = convObjToObj.db2ClaimToCaClaim(getClaimPolicyJpaDto);
             log.warn("caCommercial2:" + caCommercial.toString());
@@ -543,10 +556,53 @@ public class Lgipdb01 {
         log.debug("Method getClaimDb2Info2Cur completed..");
     }
 
-    // public void writeErrorMessage() {
+    public void writeErrorMessage() {
 
-    // log.debug("Method writeErrorMessage completed..");
-    // }
+        log.debug("MethodwriteErrorMessagestarted..");
+        String wsAbstime = LocalTime.now().toString();
+        String wsDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        // String wsDate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
+        // //yyyyMMdd
+        String wsTime = LocalTime.now().toString();
+        errorMsg.setEmDate(wsDate.substring(0, 8));
+        errorMsg.setEmTime(wsTime.substring(0, 6));
+        WebClient webclientBuilder = WebClient.create(LGSTSQ_HOST);
+        try {
+            Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
+                    .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class)
+                    .timeout(Duration.ofMillis(10_000));
+            errorMsg = lgstsqResp.block();
+        } catch (Exception e) {
+            log.error(e);
+        }
+        if (eibcalen > 0) {
+            if (eibcalen < 91) {
+                try {
+                    Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
+                            .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class)
+                            .timeout(Duration.ofMillis(10_000));
+                    errorMsg = lgstsqResp.block();
+                } catch (Exception e) {
+                    log.error(e);
+                }
+
+            } else {
+                try {
+                    Mono<String> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
+                            .body(Mono.just(caErrorMsg), String.class).retrieve().bodyToMono(String.class)
+                            .timeout(Duration.ofMillis(10_000));
+                    caErrorMsg = lgstsqResp.block();
+                } catch (Exception e) {
+                    log.error(e);
+                }
+
+            }
+
+        }
+
+        log.debug("Method writeErrorMessage completed..");
+
+    }
 
     // /* End of program */
 
