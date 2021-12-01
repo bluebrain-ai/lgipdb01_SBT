@@ -236,10 +236,10 @@ public class Lgipdb01 {
             break;
         case "01ICLM":
             db2ClaimnumInt = (int) dfhcommarea.getCaPolicyRequest().getCaClaim().getCaCNum();
-            // getClaimDb2Info1();
+             getClaimDb2Info1();
             break;
         case "02ICLM":
-            // getClaimDb2Info2();
+             getClaimDb2Info2();
             break;
         default:
             dfhcommarea.setCaReturnCode(99);
@@ -277,6 +277,8 @@ public class Lgipdb01 {
                 }
                 String caPaddingData = dfhcommarea.getCaPolicyRequest().getCaEndowment().getCaEPaddingData();
                 dfhcommarea.getCaPolicyRequest().getCaEndowment().setCaEPaddingData(caPaddingData + "FINAL");
+            }else{
+                dfhcommarea.setCaReturnCode(01);
             }
 
         } catch (Exception e) { // no row found 01
@@ -298,6 +300,8 @@ public class Lgipdb01 {
             getHousePolicyJpaDto = getHousePolicyJpa
                     .getHousePolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
 
+           if (getHousePolicyJpaDto != null)
+           {
             if (getHousePolicyJpaDto.getDb2BrokeridInt() != null) {
                 db2PolicyCommon.setDb2Brokerid(getHousePolicyJpaDto.getDb2BrokeridInt());
             }
@@ -315,9 +319,12 @@ public class Lgipdb01 {
             dfhcommarea.getCaPolicyRequest().setCaHouse(caHouse);
 
             caHouse.setCaHFiller("FINAL");
+        }else{
+            dfhcommarea.setCaReturnCode(01); 
+        }
         } catch (Exception e) {
             log.error(e);
-            dfhcommarea.setCaReturnCode(01); // No row found
+           
             dfhcommarea.setCaReturnCode(90);
             writeErrorMessage();
         }
@@ -337,7 +344,7 @@ public class Lgipdb01 {
                 caPolicyCommon = convObjToObj.db2MCommonToCaPolicyCommon(getMotorPolicyJpaDto);
                 caMotor = convObjToObj.db2MotorToCaMotor(getMotorPolicyJpaDto);
 
-                log.warn("caHouse:" + caHouse.toString());
+                log.warn("caMotor:" + caMotor.toString());
                 log.warn("caPolicyCommon:" + caPolicyCommon.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
@@ -364,7 +371,9 @@ public class Lgipdb01 {
         try {
             IGetCommercialPolicy2JpaDto getCommercialPolicyJpaDto = getCommercialPolicyJpa
                     .getCommercialPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
+            if (getCommercialPolicyJpaDto != null){
 
+            
             caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(getCommercialPolicyJpaDto);
             log.warn("caPolicyCommon:" + caPolicyCommon.toString());
             caCommercial = convObjToObj.db2CommercialToCaCommercial(getCommercialPolicyJpaDto);
@@ -373,8 +382,11 @@ public class Lgipdb01 {
             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
             dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
             caCommercial.setCaBFiller("FINAL");
+            }else{
+                dfhcommarea.setCaReturnCode(01);
+            }
         } catch (Exception e) {
-            dfhcommarea.setCaReturnCode(01);
+            
             dfhcommarea.setCaReturnCode(90);
             writeErrorMessage();
         }
@@ -389,7 +401,8 @@ public class Lgipdb01 {
         try {
             IGetCommercialPolicy2JpaDto getCommercialPolicy2JpaDto = getCommercialPolicy2Jpa
                     .getCommercialPolicy2ByDb2PolicynumInt(db2PolicynumInt);
-
+            if (getCommercialPolicy2JpaDto != null)
+            {
             dfhcommarea.setCaCustomerNum(db2CustomernumInt);
             caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(getCommercialPolicy2JpaDto);
             log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
@@ -399,9 +412,14 @@ public class Lgipdb01 {
             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
             dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
+            log.warn("dfhcommare Response:",dfhcommarea);
+
             caCommercial.setCaBFiller("FINAL");
+            }else{
+                dfhcommarea.setCaReturnCode(01);
+            }
         } catch (Exception e) {
-            dfhcommarea.setCaReturnCode(01);
+           
             dfhcommarea.setCaReturnCode(90);
             writeErrorMessage();
         }
