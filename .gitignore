@@ -1,10 +1,7 @@
-*.class
+
 *.log
 *.lst
 *.gz
 target/formatter-maven-cache.properties
 src/test
-target/classes
 target/maven-archiver/pom.properties
-target/generated-sources
-target/generated-sources/annotations/com/bluescript/demo/mapper/ConvObjtoObjImpl.java

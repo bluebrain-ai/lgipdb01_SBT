@@ -1,12 +1,15 @@
 package com.bluescript.demo;
 
 import java.net.URI;
+import java.net.http.HttpHeaders;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Stream;
+
+import javax.validation.Valid;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
@@ -26,6 +29,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -59,7 +63,6 @@ import com.bluescript.demo.dto.IgetHousePolicyJpaDto;
 import com.bluescript.demo.dto.IzipcursorJpaDto;
 import com.bluescript.demo.exception.BreakException;
 
-import com.bluescript.demo.model.WsHeader;
 import com.bluescript.demo.model.ErrorMsg;
 import com.bluescript.demo.model.EmVariable;
 import com.bluescript.demo.model.Db2OutIntegers;
@@ -96,8 +99,6 @@ import com.bluescript.demo.model.CaClaim;
 
 public class Lgipdb01 {
 
-    @Autowired
-    private WsHeader wsHeader;
     @Autowired
     private ErrorMsg errorMsg;
     @Autowired
@@ -148,7 +149,6 @@ public class Lgipdb01 {
     @Autowired
     private IGetEndowmentPolicyJpa getEndowmentPolicyJpa;
 
-    private IGetEndowmentPolicyJpaDto getEndowmentPolicyJpaDto;
     private int wsFullEndowLen;
     @Autowired
     private Db2EndowFixed db2EndowFixed;
@@ -193,22 +193,17 @@ public class Lgipdb01 {
 
     @PostMapping("/lgipdb01")
     @Transactional
-    public ResponseEntity<Dfhcommarea> mainline(@RequestBody Dfhcommarea payload) {
+    public ResponseEntity<Dfhcommarea> mainline(@Valid @RequestBody Dfhcommarea payload) {
 
         log.debug("Methodmainlinestarted..");
         BeanUtils.copyProperties(payload, dfhcommarea);
-        if (wsResp > 0) {
-            wsRequestId = dfhcommarea.getCaRequestId();
-            db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
-        } else {
+        dfhcommarea.setCaReturnCode(00);
+        db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
+        db2PolicynumInt = (int) dfhcommarea.getCaPolicyRequest().getCaPolicyNum();
+        emVariable.setEmCusnum(String.valueOf(dfhcommarea.getCaCustomerNum()));
+        emVariable.setEmPolnum(String.valueOf(caPolicyRequest.getCaPolicyNum()));
+        wsRequestId = dfhcommarea.getCaRequestId().toUpperCase();
 
-            dfhcommarea.setCaReturnCode(00);
-            db2CustomernumInt = (int) dfhcommarea.getCaCustomerNum();
-            db2PolicynumInt = (int) dfhcommarea.getCaPolicyRequest().getCaPolicyNum();
-            emVariable.setEmCusnum(String.valueOf(dfhcommarea.getCaCustomerNum()));
-            emVariable.setEmPolnum(String.valueOf(caPolicyRequest.getCaPolicyNum()));
-            wsRequestId = dfhcommarea.getCaRequestId().toUpperCase();
-        }
         switch (wsRequestId) {
         case "01IEND":
             log.warn("wsRequestId:" + wsRequestId);
@@ -219,7 +214,6 @@ public class Lgipdb01 {
             break;
         case "01IMOT":
             getMotorDb2Info();
-
             break;
         case "01ICOM":
             getCommercialDb2Info1();
@@ -263,7 +257,7 @@ public class Lgipdb01 {
             if (getEndowmentPolicyJpaDto != null) {
 
                 // all individual moves are taken care directly with mapper .. so explict moves
-                // are removed
+                // are removed-->Aggresive Data Forcing enforced.
                 caPolicyCommon = convObjToObj.db2CommonToCaPolicyCommon(getEndowmentPolicyJpaDto);
                 caEndowment = convObjToObj.db2EndowToCaEndowment(getEndowmentPolicyJpaDto);
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
@@ -281,8 +275,8 @@ public class Lgipdb01 {
                 dfhcommarea.setCaReturnCode(01);
             }
 
-        } catch (Exception e) { // no row found 01
-            log.error(e);
+        } catch (Exception e) {
+            // log.error(e);
             dfhcommarea.setCaReturnCode(90);
             writeErrorMessage();
         }
@@ -576,19 +570,23 @@ public class Lgipdb01 {
 
     public void writeErrorMessage() {
 
-        log.debug("MethodwriteErrorMessagestarted..");
+        log.warn("MethodwriteErrorMessagestarted..", errorMsg.toString());
         String wsAbstime = LocalTime.now().toString();
         String wsDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         // String wsDate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
         // //yyyyMMdd
         String wsTime = LocalTime.now().toString();
-        errorMsg.setEmDate(wsDate.substring(0, 8));
-        errorMsg.setEmTime(wsTime.substring(0, 6));
+        errorMsg.setEmDate(wsDate);
+        errorMsg.setEmTime(wsTime);
+        log.warn("ErrorMsg:" + errorMsg.toString());
+
         WebClient webclientBuilder = WebClient.create(LGSTSQ_HOST);
+        errorMsg.setEmVariable(emVariable);
         try {
             Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                    .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);// .timeout(Duration.ofMillis(10_000));
-            errorMsg = lgstsqResp.block();
+                    // .contentType(MediaType.APPLICATION_JSON)
+                    .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);
+            lgstsqResp.block();
         } catch (Exception e) {
             log.error(e);
         }
