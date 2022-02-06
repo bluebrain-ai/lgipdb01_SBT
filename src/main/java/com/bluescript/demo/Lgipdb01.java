@@ -206,7 +206,7 @@ public class Lgipdb01 {
 
         switch (wsRequestId) {
         case "01IEND":
-            log.warn("wsRequestId:" + wsRequestId);
+           log.debug("wsRequestId:" + wsRequestId);
             getEndowDb2Info();
             break;
         case "01IHOU":
@@ -245,12 +245,12 @@ public class Lgipdb01 {
 
     @Transactional(readOnly = true)
     public void getEndowDb2Info() {
-        log.warn("MethodgetEndowDb2Infostarted..");
+       log.debug("MethodgetEndowDb2Infostarted..");
 
         emVariable.setEmSqlreq(" SELECT ENDOW ");
 
         try {
-            log.warn("db2CustomernumInt:" + db2CustomernumInt + " db2PolicynumInt:" + db2PolicynumInt);
+           log.debug("db2CustomernumInt:" + db2CustomernumInt + " db2PolicynumInt:" + db2PolicynumInt);
             IGetEndowmentPolicyJpaDto getEndowmentPolicyJpaDto = getEndowmentPolicyJpa
                     .getPolicyByDb2CustomernumIntAndDb2PolicynumInt(db2CustomernumInt, db2PolicynumInt);
 
@@ -263,8 +263,8 @@ public class Lgipdb01 {
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaEndowment(caEndowment);
 
-                log.warn("caEndowment:" + caEndowment.toString());
-                log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+               log.debug("caEndowment:" + caEndowment.toString());
+               log.debug("caPolicyCommon:" + caPolicyCommon.toString());
 
                 if (getEndowmentPolicyJpaDto.getDb2EPaddingLen() != null) {
                     endPolicyPos = getEndowmentPolicyJpaDto.getDb2EPaddingLen();
@@ -305,8 +305,8 @@ public class Lgipdb01 {
                 caPolicyCommon = convObjToObj.db2HCommonToCaPolicyCommon(getHousePolicyJpaDto);
                 caHouse = convObjToObj.db2HouseToCaHouse(getHousePolicyJpaDto);
 
-                log.warn("caHouse:" + caHouse.toString());
-                log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+               log.debug("caHouse:" + caHouse.toString());
+               log.debug("caPolicyCommon:" + caPolicyCommon.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaHouse(caHouse);
@@ -337,8 +337,8 @@ public class Lgipdb01 {
                 caPolicyCommon = convObjToObj.db2MCommonToCaPolicyCommon(getMotorPolicyJpaDto);
                 caMotor = convObjToObj.db2MotorToCaMotor(getMotorPolicyJpaDto);
 
-                log.warn("caMotor:" + caMotor.toString());
-                log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+               log.debug("caMotor:" + caMotor.toString());
+               log.debug("caPolicyCommon:" + caPolicyCommon.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaMotor(caMotor);
@@ -367,9 +367,9 @@ public class Lgipdb01 {
             if (getCommercialPolicyJpaDto != null) {
 
                 caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(getCommercialPolicyJpaDto);
-                log.warn("caPolicyCommon:" + caPolicyCommon.toString());
+               log.debug("caPolicyCommon:" + caPolicyCommon.toString());
                 caCommercial = convObjToObj.db2CommercialToCaCommercial(getCommercialPolicyJpaDto);
-                log.warn("caCommercial:" + caCommercial.toString());
+               log.debug("caCommercial:" + caCommercial.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
@@ -396,14 +396,14 @@ public class Lgipdb01 {
             if (getCommercialPolicy2JpaDto != null) {
                 dfhcommarea.setCaCustomerNum(db2CustomernumInt);
                 caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(getCommercialPolicy2JpaDto);
-                log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+               log.debug("caPolicyCommon2:" + caPolicyCommon.toString());
                 caCommercial = convObjToObj.db2CommercialToCaCommercial(getCommercialPolicy2JpaDto);
-                log.warn("caCommercial2:" + caCommercial.toString());
+               log.debug("caCommercial2:" + caCommercial.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
-                log.warn("dfhcommare Response:", dfhcommarea);
+               log.debug("dfhcommare Response:", dfhcommarea);
 
                 caCommercial.setCaBFiller("FINAL");
             } else {
@@ -427,7 +427,7 @@ public class Lgipdb01 {
         // Put container icomData copied from icomrecord
         // put container icomcount copied from icount record
         int icomCount = icomRecordCount;
-        log.warn("icomCount:" + icomCount);
+       log.debug("icomCount:" + icomCount);
         log.debug("Method getCommercialDb2Info3 completed..");
     }
 
@@ -444,23 +444,23 @@ public class Lgipdb01 {
                 caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
                 dfhcommarea.setCaCustomerNum(db2CustomernumInt);
                 caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(e);
-                log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+               log.debug("caPolicyCommon2:" + caPolicyCommon.toString());
                 caCommercial = convObjToObj.db2CommercialToCaCommercial(e);
-                log.warn("caCommercial2:" + caCommercial.toString());
+               log.debug("caCommercial2:" + caCommercial.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
 
                 icomRecordCount = 1 + icomRecordCount;
-                log.warn("icomRecordCount:" + icomRecordCount);
-                // Set icom-pointer to address of CA-B-FILLER
+               log.debug("icomRecordCount:" + icomRecordCount);
+                
                 if (icomRecordCount >= 20) {
-                    // sqlcode = 17;
+                    
                     throw new BreakException("ForEach Exit");
                 }
             });
         } catch (BreakException be) {
-            log.warn("ForEach loop exit");
+           log.debug("ForEach loop exit");
         } catch (Exception e) {
             log.error(e);
         }
@@ -490,9 +490,9 @@ public class Lgipdb01 {
                 dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
 
                 caPolicyCommon = convObjToObj.db2CommercialCommonToCaPolicyCommon(e);
-                log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+               log.debug("caPolicyCommon2:" + caPolicyCommon.toString());
                 caCommercial = convObjToObj.db2CommercialToCaCommercial(e);
-                log.warn("caCommercial2:" + caCommercial.toString());
+               log.debug("caCommercial2:" + caCommercial.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
@@ -514,12 +514,8 @@ public class Lgipdb01 {
             IGetClaimPolicyJpaDto getClaimPolicyJpaDto = getClaimPolicJpa.getPolicyByDb2ClaimnumInt(db2ClaimnumInt);
             dfhcommarea.setCaCustomerNum(db2CustomernumInt);
             dfhcommarea.getCaPolicyRequest().setCaPolicyNum(db2PolicynumInt);
-
-            // caPolicyCommon =
-            // convObjToObj.db2ClaimCommonToCaPolicyCommon(getClaimPolicyJpaDto);
-            // log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
             caClaim = convObjToObj.db2ClaimToCaClaim(getClaimPolicyJpaDto);
-            log.warn("caCommercial2:" + caCommercial.toString());
+           log.debug("caCommercial2:" + caCommercial.toString());
 
             dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
             dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
@@ -551,10 +547,9 @@ public class Lgipdb01 {
                 dfhcommarea.setCaCustomerNum(db2CustomernumInt);
                 caPolicyRequest.setCaPolicyNum(db2PolicynumInt);
 
-                // caPolicyCommon = convObjToObj.db2ClaimCommonToCaPolicyCommon(e);
-                // log.warn("caPolicyCommon2:" + caPolicyCommon.toString());
+                
                 caClaim = convObjToObj.db2ClaimToCaClaim(e);
-                log.warn("caClaim:" + caCommercial.toString());
+               log.debug("caClaim:" + caCommercial.toString());
 
                 dfhcommarea.getCaPolicyRequest().setCaPolicyCommon(caPolicyCommon);
                 dfhcommarea.getCaPolicyRequest().setCaCommercial(caCommercial);
@@ -570,21 +565,20 @@ public class Lgipdb01 {
 
     public void writeErrorMessage() {
 
-        log.warn("MethodwriteErrorMessagestarted..", errorMsg.toString());
+       log.debug("MethodwriteErrorMessagestarted..", errorMsg.toString());
         String wsAbstime = LocalTime.now().toString();
         String wsDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        // String wsDate = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
-        // //yyyyMMdd
+       
         String wsTime = LocalTime.now().toString();
         errorMsg.setEmDate(wsDate);
         errorMsg.setEmTime(wsTime);
-        log.warn("ErrorMsg:" + errorMsg.toString());
+       log.debug("ErrorMsg:" + errorMsg.toString());
 
         WebClient webclientBuilder = WebClient.create(LGSTSQ_HOST);
         errorMsg.setEmVariable(emVariable);
         try {
             Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                    // .contentType(MediaType.APPLICATION_JSON)
+                   
                     .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);
             lgstsqResp.block();
         } catch (Exception e) {
@@ -594,7 +588,7 @@ public class Lgipdb01 {
             if (eibcalen < 91) {
                 try {
                     Mono<ErrorMsg> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                            .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);// .timeout(Duration.ofMillis(10_000));
+                            .body(Mono.just(errorMsg), ErrorMsg.class).retrieve().bodyToMono(ErrorMsg.class);
                     errorMsg = lgstsqResp.block();
                 } catch (Exception e) {
                     log.error(e);
@@ -603,7 +597,7 @@ public class Lgipdb01 {
             } else {
                 try {
                     Mono<String> lgstsqResp = webclientBuilder.post().uri(LGSTSQ_URI)
-                            .body(Mono.just(caErrorMsg), String.class).retrieve().bodyToMono(String.class);// .timeout(Duration.ofMillis(10_000));
+                            .body(Mono.just(caErrorMsg), String.class).retrieve().bodyToMono(String.class);
                     caErrorMsg = lgstsqResp.block();
                 } catch (Exception e) {
                     log.error(e);
