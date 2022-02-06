@@ -12,9 +12,9 @@ public class lgipdb01Main {
         SpringApplication.run(lgipdb01Main.class, args);
     }
 
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
+    // @Bean
+    // public ModelMapper modelMapper() {
+    //     return new ModelMapper();
+    // }
 
 }
