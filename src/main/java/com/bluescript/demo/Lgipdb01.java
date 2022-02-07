@@ -467,7 +467,8 @@ public class Lgipdb01 {
 
         log.debug("Method getCommercialDb2Info3Cur completed..");
     }
-
+   
+    @Transactional(readOnly = true)
     public void getCommercialDb2Info5() {
         log.debug("MethodgetCommercialDb2Info5started..");
         emVariable.setEmSqlreq(" SELECT COMMERCIAL ");
@@ -527,7 +528,8 @@ public class Lgipdb01 {
 
         log.debug("Method getClaimDb2Info1 completed..");
     }
-
+        
+     @Transactional(readOnly = true)
     public void getClaimDb2Info2() {
         log.debug("MethodgetClaimDb2Info2started..");
         emVariable.setEmSqlreq(" SELECT CLAIM ");
